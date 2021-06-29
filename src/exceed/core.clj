@@ -68,13 +68,36 @@
   [game player move-value type]
   (let [p1-space (get-space [:p1 (get-in game [:p1 :character])] (:play-area game))
         p2-space (get-space [:p2 (get-in game [:p2 :character])] (:play-area game))
-        player-facing (if (or            ;; Player Facing returns false if you're going towards 0 and true if towards 8
+        player-facing (if (or            ;; Player Facing returns -1 if you're going towards 0 and 1 if towards 8
                             (and (> p1-space p2-space) (= player :p1)) 
                             (and (> p2-space p1-space) (= player :p2))) 
-                       false true)
-        distance (if (> p1-space p2-space) (- p1-space p2-space) (- p2-space p1-space))
+                       -1 1)
+        distance (get-range game)
         ]
      (assoc game :play-area
         (case type
-           :advance (if (>= distance (get-range game))
+           :retreat (move-card (:play-area game)
+                               [player (get-in game [player :character])]
+                               (if (= player :p1) p1-space p2-space)
+                               (if (= player :p1)
+                                 (if (= 1 player-facing)
+                                   (max (- p1-space (* move-value player-facing)) 0)
+                                   (min (- p1-space (* move-value player-facing)) 8))
+                                 (if (= 1 player-facing)
+                                   (max (- p2-space (* move-value player-facing)) 0)
+                                   (min (- p2-space (* move-value player-facing)) 8))))
+           :close (move-card (:play-area game)
+                             [player (get-in game [player :character])]
+                             (if (= player :p1) p1-space p2-space)
+                             (if (= player :p1)
+                               (+ p1-space (* (min move-value (dec distance)) player-facing))
+                               (+ p2-space (* (min move-value (dec distance)) player-facing))))
+           :advance (if (< move-value distance)
+                      (move-card (:play-area game)
+                                 [player (get-in game [player :character])]
+                               (if (= player :p1) p1-space p2-space)
+                               (if (= player :p1) 
+                                 (+ p1-space (* move-value player-facing))
+                                 (+ p2-space (* move-value player-facing))))
                       '() )))))
+
