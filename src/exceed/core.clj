@@ -61,10 +61,10 @@
   [play-area item old-space new-space]
   (remove-card (add-card play-area item new-space) item old-space))
 
-(defn move
+(defn move ;; May need to return details for future knowledge. Force-point cost, crossed over, etc.
   "Handles character movement on the board to ensure legal moves are made.
   `type` refers to whether this is an advance, retreat, close, or move.
-  Negative movement is away from your opponent, positive movement towards and past them."
+  Negative movement is to the beginning of the arena, positive movement towards the end."
   [game player move-value type]
   (let [p1-space (get-space [:p1 (get-in game [:p1 :character])] (:play-area game))
         p2-space (get-space [:p2 (get-in game [:p2 :character])] (:play-area game))
@@ -100,18 +100,18 @@
                                  (+ p1-space (* move-value player-facing))
                                  (+ p2-space (* move-value player-facing))))
                       (if (= player :p1)
-                        (cond (and (> (+ p1-space (* player-facing move-value) 1) 8)
+                        (cond (and (> (+ p1-space (* player-facing move-value) 1) 8)  ;; If they'd go past the arena and p2 is in last space, only move short of them
                                    (= p2-space 8))
                              (move-card (:play-area game) [:p1 (get-in game [:p1 :character])] p1-space 7)
-                             (> (+ p1-space (* player-facing move-value) 1) 8)
+                             (> (+ p1-space (* player-facing move-value) 1) 8)        ;; if they'd go past the arena otherwise, go to spot 8
                              (move-card (:play-area game) [:p1 (get-in game [:p1 :character])] p1-space 8)
                              (and (< (+ p1-space (* player-facing move-value) -1) 0)
                                   (= p2-space 0))
-                             (move-card (:play-area game) [:p1 (get-in game [:p1 :character])] p1-space 1)
+                             (move-card (:play-area game) [:p1 (get-in game [:p1 :character])] p1-space 1) ;; the same but for the other direction
                              (< (+ p1-space (* player-facing move-value) -1) 0)
                              (move-card (:play-area game) [:p1 (get-in game [:p1 :character])] p1-space 0)
-                             :else (move-card (:play-area game) [:p1 (get-in game [:p1 :character])] p1-space (+ p1-space (* player-facing (+ move-value 1)))))
-                        (cond (and (> (+ p2-space (* player-facing move-value) 1) 8)
+                             :else (move-card (:play-area game) [:p1 (get-in game [:p1 :character])] p1-space (+ p1-space (* player-facing (+ move-value 1))))) ;; If they wouldn't go past, normal move
+                        (cond (and (> (+ p2-space (* player-facing move-value) 1) 8) ;; Same but for player 2 
                                    (= p1-space 8))
                               (move-card (:play-area game) [:p2 (get-in game [:p2 :character])] p2-space 7)
                               (> (+ p2-space (* player-facing move-value) 1) 8)
