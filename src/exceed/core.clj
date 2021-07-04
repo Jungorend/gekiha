@@ -6,12 +6,22 @@
   speed
   power
   range ;; [min max]
-  card-text ;; function, pass in current game state /(:before), get prizes
+  card-text ;; function, pass in current game state /(:before), game, active player, get prizes
   boost-name
   boost-continuous? ;; boolean
   boost-cost ;; [type value]
   boost-text
   ])
+
+(defn request-player-input ;; TODO: implement player input.
+  "This function is the interface between the game logic and making changes.
+  It allows mid-any stage more information to be requests from specific players.
+  Active player is the player to request input from.
+  type is what sort of request is being made.
+  bounds is any restrictions on the request, for example minimum/max values.
+  For now it just takes the input from the CLI and compares it to bounds"
+  [player type bounds]
+  2)
 
 (defn setup-game
   "Creates initial game state. inputs are characters."
@@ -19,12 +29,22 @@
   {:play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
   	:p1 {:health 30,
   	     :character p1-character
-  	     :exceeded? false}
+  	     :exceeded? false
+         :status {
+           :can-move true
+           :can-be-pushed true
+           :can-hit true
+           }}
   	:p2 {:health 30,
-  		    :character p2-character
-  		    :exceeded? false}})
+  		   :character p2-character
+         :exceeded? false
+         :status {
+           :can-move true
+           :can-be-pushed true
+           :can-hit true
+           }}})
 
-(defn get-space   
+(defn get-space
   "Takes `item` and returns which space it is in, or nil if it doesn't exist.
   `item` is of format [player card]"
   ([item play-area] (get-space item play-area 0))
@@ -84,7 +104,58 @@
                          (> (+ old-space (* player-facing move-value) 1 ) 8) (move-character 8)
                          (and (< (+ old-space (* player-facing move-value) -1) 0) (= opponent-space 0)) (move-character 1)
                          (< (+ old-space (* player-facing move-value) -1) 0) (move-character 0)
-                         :else (move-character (+ old-space (* player-facing (+ move-value 1))))))))) 
+                         :else (move-character (+ old-space (* player-facing (+ move-value 1)))))))))
 
+(def normals
+  ;; state in boost is not always used but may be useful for future things
+  ;; will call all attacks and boosts each turn
+  {:assault (AttackCard.
+    "Assault"
+    [:force 0]
+    5
+    4
+    [1 1]
+    (fn [state game active-player]
+      (case state :before (move game active-player 2 :close)
+        :hit :advantage
+        :else nil))
+    "Backstep"
+    false
+    [:force 0]
+    (fn [state game active-player]
+      (let [move-value (request-player-input active-player :number [0 4])]
+        (move game active-player move-value :retreat))))
 
+    :cross (AttackCard.
+      "Cross"
+      [:force 0]
+      6
+      3
+      [1 1]
+      (fn [state game active-player]
+        (case state :after (move game active-player 3 :retreat)
+          :else nil))
+      "Run"
+      false
+      [:force 0]
+      (fn [state game active-player]
+        (let [move-value (request-player-input active-player :number [0 3])]
+          (move game active-player move-value :advance))))
 
+    :grasp (AttackCard.
+      "Grasp"
+      [:force 0]
+      7
+      3
+      [1 1]
+      (fn [state game active-player]
+        (case state :hit (let [receiving-player (if (= :p1 active-player) :p2 :p1)]
+            (when (get-in game [:receiving-player :status :can-be-pushed])
+              (move game receiving-player (request-player-input active-player :number [-2 2]) :advance)))
+            :else nil))
+      "Fierce"
+      true
+      [:force 0]
+      (fn [state game active-player]
+        {:power 2}))
+      })

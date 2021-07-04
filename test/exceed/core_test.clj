@@ -2,6 +2,8 @@
   (:require [clojure.test :refer :all]
             [exceed.core :refer :all]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(deftest basic-initialization
+  (let [game (setup-game :ryu :ken)]
+    (testing "Confirm that Ryu and Ken are in starting positions"
+      (is (= [[:p1 :ryu]] ((:play-area game) 2)))
+      (is (= [[:p2 :ken]] ((:play-area game) 6))))))
