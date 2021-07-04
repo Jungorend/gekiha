@@ -27,6 +27,7 @@
   "Creates initial game state. inputs are characters."
   [p1-character p2-character]
   {:play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
+    :next-player :p1
   	:p1 {:health 30,
   	     :character p1-character
   	     :exceeded? false
@@ -116,15 +117,15 @@
     4
     [1 1]
     (fn [state game active-player]
-      (case state :before (move game active-player 2 :close)
-        :hit :advantage
-        :else nil))
+      (case state :before (assoc game :play-area (move game active-player 2 :close))
+        :hit (assoc game :next-player active-player)
+        :else game))
     "Backstep"
     false
     [:force 0]
     (fn [state game active-player]
       (let [move-value (request-player-input active-player :number [0 4])]
-        (move game active-player move-value :retreat))))
+        (assoc game :play-area (move game active-player move-value :retreat)))))
 
     :cross (AttackCard.
       "Cross"
@@ -133,14 +134,14 @@
       3
       [1 1]
       (fn [state game active-player]
-        (case state :after (move game active-player 3 :retreat)
-          :else nil))
+        (case state :after (assoc game :play-area (move game active-player 3 :retreat))
+          :else game))
       "Run"
       false
       [:force 0]
       (fn [state game active-player]
         (let [move-value (request-player-input active-player :number [0 3])]
-          (move game active-player move-value :advance))))
+          (assoc game :play-area (move game active-player move-value :advance)))))
 
     :grasp (AttackCard.
       "Grasp"
