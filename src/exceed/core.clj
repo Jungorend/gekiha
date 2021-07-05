@@ -1,5 +1,15 @@
 (ns exceed.core)
 
+;; Notes for order of attacking
+;; Reveal effects -> Calculate Speed -> Before Effects ->
+;; Calculate Range -> Hit effects -> Damage -> After Effects
+;; After both players -> Cleanup effects, discard cards
+
+;; TODO: Need to either have the move function notify when you cross over
+;; or a separate function to confirm this
+;; TODO: player turns, strikes
+
+
 (defrecord AttackCard [
   name
   cost ;; [type value] /:force or /:gauge
@@ -31,18 +41,34 @@
   	:p1 {:health 30,
   	     :character p1-character
   	     :exceeded? false
+         :modifiers {
+           :power 0
+           :speed 0
+           :range [0 0]
+           :guard 0
+           :armor 0
+         }
          :status {
            :can-move true
            :can-be-pushed true
            :can-hit true
+           :stunned false
            }}
   	:p2 {:health 30,
   		   :character p2-character
          :exceeded? false
+         :modifiers {
+           :power 0
+           :speed 0
+           :range [0 0]
+           :guard 0
+           :armor 0
+         }
          :status {
            :can-move true
            :can-be-pushed true
            :can-hit true
+           :stunned false
            }}})
 
 (defn get-space
@@ -112,10 +138,7 @@
   ;; will call all attacks and boosts each turn
   {:assault (AttackCard.
     "Assault"
-    [:force 0]
-    5
-    4
-    [1 1]
+    [:force 0] 5 4 [1 1]
     (fn [state game active-player]
       (case state :before (assoc game :play-area (move game active-player 2 :close))
         :hit (assoc game :next-player active-player)
@@ -129,10 +152,7 @@
 
     :cross (AttackCard.
       "Cross"
-      [:force 0]
-      6
-      3
-      [1 1]
+      [:force 0] 6 3 [1 1]
       (fn [state game active-player]
         (case state :after (assoc game :play-area (move game active-player 3 :retreat))
           :else game))
@@ -145,18 +165,16 @@
 
     :grasp (AttackCard.
       "Grasp"
-      [:force 0]
-      7
-      3
-      [1 1]
+      [:force 0] 7 3 [1 1]
       (fn [state game active-player]
         (case state :hit (let [receiving-player (if (= :p1 active-player) :p2 :p1)]
-            (when (get-in game [:receiving-player :status :can-be-pushed])
-              (move game receiving-player (request-player-input active-player :number [-2 2]) :advance)))
-            :else nil))
+            (if (get-in game [:receiving-player :status :can-be-pushed])
+              (assoc game :play-area (move game receiving-player (request-player-input active-player :number [-2 2]) :advance))
+              game)
+              :else game)))
       "Fierce"
       true
       [:force 0]
       (fn [state game active-player]
-        {:power 2}))
+        (assoc-in game [:modifiers :power] (+ 2 (get-in game [:modifiers :power])))))
       })
