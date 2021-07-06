@@ -8,6 +8,7 @@
 ;; TODO: Need to either have the move function notify when you cross over
 ;; or a separate function to confirm this
 ;; TODO: player turns, strikes
+;; TODO: Break this up into multiple files like normal people do
 
 
 (defrecord AttackCard [
@@ -33,7 +34,7 @@
   [player type bounds]
   2)
 
-(defn setup-game
+(defn setup-game ;; TODO: Once we have a deck or two, should just call a function to set up decks from characters
   "Creates initial game state. inputs are characters."
   [p1-character p2-character]
   {:play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
@@ -47,6 +48,14 @@
            :range [0 0]
            :guard 0
            :armor 0
+         }
+         :areas {
+           :strike [] ;; Strike will only ever need a max of 2 cards
+           :discard [] ;; TODO: Consider ramifications of lists instead
+           :draw []
+           :hand []
+           :gauge []
+           :boost []
          }
          :status {
            :can-move true
@@ -63,6 +72,14 @@
            :range [0 0]
            :guard 0
            :armor 0
+         }
+         :areas {
+           :strike []
+           :discard []
+           :draw []
+           :hand []
+           :gauge []
+           :boost []
          }
          :status {
            :can-move true
