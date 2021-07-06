@@ -189,4 +189,24 @@
       [:force 0]
       (fn [state game active-player]
         (assoc-in game [:modifiers :power] (+ 2 (get-in game [:modifiers :power])))))
+    :dive (AttackCard.
+      "Dive"
+      [:force 0] 4 4 [1 1]
+      (fn [state game active-player]
+        (case state :before (let [new-movement (move game active-player 3 :advance)
+                                  original-space (get-space [active-player (get-in game [active-player :character])] (:play-area game))
+                                  new-space      (get-space [active-player (get-in new-movement [active-player :character])] (:play-area new-movement))
+                                  opponent (if (= :p1 active-player) :p2 :p1)
+                                  opponent-space (get-space [opponent (get-in game [opponent :character])] (:play-area game))]
+            (if (or (and (< original-space opponent-space) (> new-space opponent-space))
+                    (and (> original-space opponent-space) (< new-space opponent-space)))
+                (assoc-in new-movement [:opponent :status :can-hit] false)
+                new-movement))))
+      "Tech"
+      false
+      [:force 0]
+      (fn [state game active-player] ;; TODO: Implement Tech
+        game))
       })
+
+  (let [p1-space (get-space [:p1 (get-in game [:p1 :character])] (:play-area game))
