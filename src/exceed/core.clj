@@ -108,6 +108,16 @@
   [play-area item old-space new-space]
   (remove-card (add-card play-area item new-space) item old-space))
 
+(defn can-move?
+  "Returns true if the push/pull or move is allowed."
+  [game player type]
+  (case type
+    :advance (get-in game [player :status :can-move])
+    :close (get-in game [player :status :can-move])
+    :retreat (get-in game [player :status :can-move])
+    :push (get-in game [player :status :can-be-pushed])
+    :else false))
+
 (defn move ;; May need to return details for future knowledge. Force-point cost, crossed over, etc.
   "Handles character movement on the board to ensure legal moves are made.
   `type` refers to whether this is an advance, retreat, close, or move.
@@ -120,18 +130,20 @@
         player-facing (if (> old-space opponent-space) -1 1) ;; -1 for towards 0, 1 towards 8
         distance (get-range game)
         move-character (partial move-card (:play-area game) [player (get-in game [player :character])] old-space)]
-     (assoc game :play-area
-        (case type
-          :retreat (move-character (if (= 1 player-facing)
-                                     (max (- old-space (* move-value player-facing)) 0)
-                                     (min (- old-space (* move-value player-facing)) 8)))
-          :close (move-character (+ old-space (* (min move-value (dec distance)) player-facing)))
-          :advance (cond (< move-value distance) (move-character (+ old-space (* move-value player-facing)))
-                         (and (> (+ old-space (* player-facing move-value) 1) 8) (= opponent-space 8)) (move-character 7)
-                         (> (+ old-space (* player-facing move-value) 1 ) 8) (move-character 8)
-                         (and (< (+ old-space (* player-facing move-value) -1) 0) (= opponent-space 0)) (move-character 1)
-                         (< (+ old-space (* player-facing move-value) -1) 0) (move-character 0)
-                         :else (move-character (+ old-space (* player-facing (+ move-value 1)))))))))
+     (if (can-move? game player type)
+       (assoc game :play-area
+          (case type
+            :retreat (move-character (if (= 1 player-facing)
+                                       (max (- old-space (* move-value player-facing)) 0)
+                                       (min (- old-space (* move-value player-facing)) 8)))
+            :close (move-character (+ old-space (* (min move-value (dec distance)) player-facing)))
+            :advance (cond (< move-value distance) (move-character (+ old-space (* move-value player-facing)))
+                           (and (> (+ old-space (* player-facing move-value) 1) 8) (= opponent-space 8)) (move-character 7)
+                           (> (+ old-space (* player-facing move-value) 1 ) 8) (move-character 8)
+                           (and (< (+ old-space (* player-facing move-value) -1) 0) (= opponent-space 0)) (move-character 1)
+                           (< (+ old-space (* player-facing move-value) -1) 0) (move-character 0)
+                           :else (move-character (+ old-space (* player-facing (+ move-value 1)))))))
+       game)))
 
 (def normals
   ;; state in boost is not always used but may be useful for future things
