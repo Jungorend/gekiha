@@ -152,7 +152,7 @@
     "Assault"
     [:force 0] 5 4 [1 1]
     (fn [state game active-player]
-      (case state :before (assoc game :play-area (move game active-player 2 :close))
+      (case state :before (move game active-player 2 :close)
         :hit (assoc game :next-player active-player)
         :else game))
     "Backstep"
@@ -160,20 +160,20 @@
     [:force 0]
     (fn [state game active-player]
       (let [move-value (request-player-input active-player :number [0 4])]
-        (assoc game :play-area (move game active-player move-value :retreat)))))
+        (move game active-player move-value :retreat))))
 
     :cross (AttackCard.
       "Cross"
       [:force 0] 6 3 [1 1]
       (fn [state game active-player]
-        (case state :after (assoc game :play-area (move game active-player 3 :retreat))
+        (case state :after (move game active-player 3 :retreat)
           :else game))
       "Run"
       false
       [:force 0]
       (fn [state game active-player]
         (let [move-value (request-player-input active-player :number [0 3])]
-          (assoc game :play-area (move game active-player move-value :advance)))))
+          (move game active-player move-value :advance))))
 
     :grasp (AttackCard.
       "Grasp"
@@ -181,7 +181,7 @@
       (fn [state game active-player]
         (case state :hit (let [receiving-player (if (= :p1 active-player) :p2 :p1)]
             (if (get-in game [:receiving-player :status :can-be-pushed])
-              (assoc game :play-area (move game receiving-player (request-player-input active-player :number [-2 2]) :advance))
+              (move game receiving-player (request-player-input active-player :number [-2 2]) :advance)
               game)
               :else game)))
       "Fierce"
@@ -189,6 +189,7 @@
       [:force 0]
       (fn [state game active-player]
         (assoc-in game [:modifiers :power] (+ 2 (get-in game [:modifiers :power])))))
+
     :dive (AttackCard.
       "Dive"
       [:force 0] 4 4 [1 1]
@@ -208,5 +209,3 @@
       (fn [state game active-player] ;; TODO: Implement Tech
         game))
       })
-
-  (let [p1-space (get-space [:p1 (get-in game [:p1 :character])] (:play-area game))
