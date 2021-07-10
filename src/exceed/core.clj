@@ -7,8 +7,6 @@
 ;; Calculate Range -> Hit effects -> Damage -> After Effects
 ;; After both players -> Cleanup effects, discard cards
 
-;; TODO: Need to either have the move function notify when you cross over
-;; or a separate function to confirm this
 ;; TODO: player turns, strikes
 
 ;; states
@@ -17,65 +15,52 @@
 
 
 (defn create-deck ;; TODO: Add logic to add cards based on character as well
-  "This will setup the decks for each character.
+  "This sets up the decks for each character.
   Decks consist of 2 of every normal, as well as 2 of every special and ultra unique to the character."
   [character player]
-  (shuffle (map #(vector player %) (conj (take 16 (cycle (keys exceed.card.normals/normals))) (take 14 (cycle (keys exceed.characters.season-three/ryu)))))))
+  (let [character (case character :ryu exceed.characters.season-three/ryu
+                                  :else exceed.characters.season-three/ryu)]
+      (shuffle (map #(vector player %)
+        (concat (take 16 (cycle (keys exceed.card.normals/normals)))
+              (take 14 (cycle (keys (:cards character)))))))))
 
-(defn setup-game ;; TODO: Once we have a deck or two, should just call a function to set up decks from characters, for now we're just going to use normals
-  "Creates initial game state. inputs are characters."
-  [p1-character p2-character]
-  {:play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
-    :next-player :p1
-  	:p1 {:health 30,
-  	     :character p1-character
-  	     :exceeded? false
-         :modifiers {
-           :power 0
-           :speed 0
-           :range [0 0]
-           :guard 0
-           :armor 0
-         }
-         :areas {
-           :strike [] ;; Strike will only ever need a max of 2 cards
-           :discard [] ;; TODO: Consider ramifications of lists instead
-           :draw (into [] (create-deck p1-character :p1))
-           :hand []
-           :gauge []
-           :boost []
-         }
-         :status {
-           :can-move true
-           :can-be-pushed true
-           :can-hit true
-           :hit false
-           :stunned false
-           :critical false
-           }}
-  	:p2 {:health 30,
-  		   :character p2-character
-         :exceeded? false
-         :modifiers {
-           :power 0
-           :speed 0
-           :range [0 0]
-           :guard 0
-           :armor 0
-         }
-         :areas {
-           :strike []
-           :discard []
-           :draw (into [] (create-deck p1-character :p2))
-           :hand []
-           :gauge []
-           :boost []
-         }
-         :status {
-           :can-move true
-           :can-be-pushed true
-           :can-hit true
-           :hit false
-           :stunned false
-           :critical false
-           }}})
+(defn create-player
+  "Create initial player stats"
+  [character first?]
+  (let [deck (create-deck character :p1)
+        draw-count (if first? 5 6)]
+    {:health 30
+     :character character
+     :exceeded? false
+     :modifiers {
+       :power 0
+       :speed 0
+       :range [0 0]
+       :guard 0
+       :armor 0}
+    :areas {
+      :strike []
+      :discard []
+      :draw (into [] (drop draw-count deck))
+      :hand (into [] (take draw-count deck))
+      :guage []
+      :boost []}
+   :status {
+     :can-move true
+     :can-be-pushed true
+     :can-hit true
+     :hit false ;; Tracking if hit during a strike
+     :stunned false
+     :critical false}
+   }))
+
+(defn setup-game
+  "Creates initial game state. Inputs are characters and starting player"
+  [p1-character p2-character first-player]
+  (let [p1-first? (= :p1 first-player)]
+    {:play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
+      :next-player (if (= :p1 first-player) :p2 :p1)
+      :current-player first-player
+      :phase :mulligan
+      :p1 (create-player p1-character p1-first?)
+      :p2 (create-player p2-character (not p1-first?))}))
