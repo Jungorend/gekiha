@@ -43,7 +43,7 @@
       :discard []
       :draw (into [] (drop draw-count deck))
       :hand (into [] (take draw-count deck))
-      :guage []
+      :gauge []
       :boost []}
    :status {
      :can-move true

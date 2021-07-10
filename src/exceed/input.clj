@@ -6,6 +6,6 @@
   Active player is the player to request input from.
   type is what sort of request is being made.
   bounds is any restrictions on the request, for example minimum/max values.
-  For now it just takes the input from the CLI and compares it to bounds"
+  For now it's just a dummy function."
   [player type bounds]
   2)
