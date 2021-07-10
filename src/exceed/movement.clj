@@ -1,5 +1,9 @@
 (ns exceed.movement)
 
+;; This contains all the utility functions for basic movement either from boosts
+;; or strikes. The primary functions to use are get-space to locate the space of an object
+;; and move, which moves a piece to a new location
+
 (defn get-space
   "Takes `item` and returns which space it is in, or nil if it doesn't exist.
   `item` is of format [player card]"
@@ -47,7 +51,7 @@
     :push (get-in game [player :status :can-be-pushed])
     :else false))
 
-(defn move ;; May need to return details for future knowledge. Force-point cost, crossed over, etc.
+(defn move ;; May need to return details for future knowledge. Force-point cost, crossed over, etc. TODO: :push
   "Handles character movement on the board to ensure legal moves are made.
   `type` refers to whether this is an advance, retreat, close, or move.
   Negative movement is to the beginning of the arena, positive movement towards the end."

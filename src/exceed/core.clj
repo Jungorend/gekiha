@@ -1,5 +1,6 @@
 (ns exceed.core
-  (:require [exceed.card.normals]))
+  (:require [exceed.card.normals]
+            [exceed.characters.season-three]))
 
 ;; Notes for order of attacking
 ;; Reveal effects -> Calculate Speed -> Before Effects ->
@@ -9,9 +10,9 @@
 ;; TODO: Need to either have the move function notify when you cross over
 ;; or a separate function to confirm this
 ;; TODO: player turns, strikes
-;; TODO: Break this up into multiple files like normal people do
 
-
+;; states
+;; placement, reveal, hit before after cleanup
 
 
 
@@ -19,7 +20,7 @@
   "This will setup the decks for each character.
   Decks consist of 2 of every normal, as well as 2 of every special and ultra unique to the character."
   [character player]
-  (shuffle (map #(vector player %) (take 16 (cycle (keys exceed.card.normals/normals))))))
+  (shuffle (map #(vector player %) (conj (take 16 (cycle (keys exceed.card.normals/normals))) (take 14 (cycle (keys exceed.characters.season-three/ryu)))))))
 
 (defn setup-game ;; TODO: Once we have a deck or two, should just call a function to set up decks from characters, for now we're just going to use normals
   "Creates initial game state. inputs are characters."
@@ -39,7 +40,7 @@
          :areas {
            :strike [] ;; Strike will only ever need a max of 2 cards
            :discard [] ;; TODO: Consider ramifications of lists instead
-           :draw []
+           :draw (into [] (create-deck p1-character :p1))
            :hand []
            :gauge []
            :boost []
@@ -48,7 +49,9 @@
            :can-move true
            :can-be-pushed true
            :can-hit true
+           :hit false
            :stunned false
+           :critical false
            }}
   	:p2 {:health 30,
   		   :character p2-character
@@ -63,7 +66,7 @@
          :areas {
            :strike []
            :discard []
-           :draw []
+           :draw (into [] (create-deck p1-character :p2))
            :hand []
            :gauge []
            :boost []
@@ -72,5 +75,7 @@
            :can-move true
            :can-be-pushed true
            :can-hit true
+           :hit false
            :stunned false
+           :critical false
            }}})
