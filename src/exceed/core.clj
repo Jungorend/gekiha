@@ -12,17 +12,15 @@
 ;; states
 ;; placement, reveal, hit before after cleanup
 
-
-
-(defn create-deck ;; TODO: Add logic to add cards based on character as well
-  "This sets up the decks for each character.
+(defn create-deck
+  "This sets up the starting deck for each character.
   Decks consist of 2 of every normal, as well as 2 of every special and ultra unique to the character."
   [character player]
-  (let [character (case character :ryu exceed.characters.season-three/ryu
-                                  :else exceed.characters.season-three/ryu)]
-      (shuffle (map #(vector player %)
-        (concat (take 16 (cycle (keys exceed.card.normals/normals)))
-              (take 14 (cycle (keys (:cards character)))))))))
+  (let [c (case character :ryu exceed.characters.season-three/ryu
+                          :else exceed.characters.season-three/ryu)]
+      (shuffle (concat
+        (map #(vector player :facedown character %) (take 14 (cycle (keys (:cards c)))))
+        (map #(vector player :facedown :normal %) (take 16 (cycle (keys exceed.card.normals/normals))))))))
 
 (defn create-player
   "Create initial player stats"
