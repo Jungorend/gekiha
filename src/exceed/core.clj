@@ -71,7 +71,7 @@
   [p1-character p2-character first-player]
   (let [p1-first? (= :p1 first-player)]
     {:play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
-      :next-player (if (= :p1 first-player) :p2 :p1)
+      :next-player (if p1-first? :p2 :p1)
       :current-player first-player
       :phase :mulligan
       :p1 (create-player p1-character p1-first?)
