@@ -12,15 +12,27 @@
 ;; states
 ;; placement, reveal, hit before after cleanup
 
+(defn get-character-info
+  [character]
+  (case character :ryu exceed.characters.season-three/ryu
+                  :normal exceed.card.normals/normals
+                  :else exceed.characters.season-three/ryu)) ;; Off-chance that an invalid keyword is called, treat as Ryu.
+
 (defn create-deck
   "This sets up the starting deck for each character.
   Decks consist of 2 of every normal, as well as 2 of every special and ultra unique to the character."
   [character player]
-  (let [c (case character :ryu exceed.characters.season-three/ryu
-                          :else exceed.characters.season-three/ryu)]
-      (shuffle (concat
-        (map #(vector player :facedown character %) (take 14 (cycle (keys (:cards c)))))
-        (map #(vector player :facedown :normal %) (take 16 (cycle (keys exceed.card.normals/normals))))))))
+  (shuffle (concat
+    (map #(vector player :face-down character %) (take 14 (cycle (keys (:cards (get-character-info character))))))
+    (map #(vector player :face-down :normal %) (take 16 (cycle (keys exceed.card.normals/normals)))))))
+
+(defn get-boosts
+  [player area]
+  (map (fn [c] (:boost-name ((nth c 3) (if (= :normal (nth c 2))
+                                           (get-character-info (nth c 2)) ;; Slightly different format for normals
+                                           (:cards (get-character-info (nth c 2)))))))
+    (filter #(or (= :face-up (second %)) (= :face-down (second %)))
+      area)))
 
 (defn create-player
   "Create initial player stats"
