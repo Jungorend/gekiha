@@ -28,12 +28,13 @@
     (map #(vector player :face-down :normal %) (take 16 (cycle (keys exceed.card.normals/normals)))))))
 
 (defn get-boosts
+  "Returns a list of the boosts owned by player in whichever draw area."
   [player area]
-  (map (fn [c] (:boost-name ((nth c 3) (if (= :normal (nth c 2))
-                                           (get-character-info (nth c 2)) ;; Slightly different format for normals
-                                           (:cards (get-character-info (nth c 2)))))))
-    (filter #(or (= :face-up (second %)) (= :face-down (second %)))
-      area)))
+  (->> area
+    (filter #(or (= :face-up (second %)) (= :face-down (second %))))
+    (map #(:boost-name ((nth % 3) (if (= :normal (nth % 2))
+                                      (get-character-info (nth % 2))
+                                      (:cards (get-character-info (nth % 2)))))))))
 
 (defn create-player
   "Create initial player stats"
