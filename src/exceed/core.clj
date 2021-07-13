@@ -18,6 +18,7 @@
                   :normal exceed.card.normals/normals
                   :else exceed.characters.season-three/ryu)) ;; Off-chance that an invalid keyword is called, treat as Ryu.
 
+
 (defn create-deck
   "This sets up the starting deck for each character.
   Decks consist of 2 of every normal, as well as 2 of every special and ultra unique to the character."

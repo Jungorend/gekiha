@@ -1,4 +1,5 @@
-(ns exceed.movement)
+(ns exceed.movement
+  (:require [exceed.utilities :refer [remove-first]]))
 
 ;; This contains all the utility functions for basic movement either from boosts
 ;; or strikes. The primary functions to use are get-space to locate the space of an object
@@ -24,12 +25,7 @@
 (defn remove-card
   "Takes the first entry of the item it finds and removes it from the play area."
   [play-area item space]
-  (letfn [(remove-first [iter item results]
-            (cond (empty? iter) results
-                  (and (= (first (first iter)) (first item))
-                       (= (second (first iter)) (second item))) (concat (rest iter) results)
-                  :else (recur (rest iter) item (conj results (first iter)))))]
-    (assoc play-area space (into [] (remove-first (get play-area space) item [])))))
+  (assoc play-area space (into [] (remove-first (get play-area space) item))))
 
 (defn add-card
   "Takes an entry of the item and adds it to the play area."
