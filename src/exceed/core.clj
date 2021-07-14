@@ -86,11 +86,11 @@
 
 (defn remove-card
   "Remove card from an area"
-  ([game card area] (assoc-in game area (remove-card game card (get-in game area) []))
+  ([game card area] (assoc-in game area (remove-card game card (get-in game area) [])))
   ([game card area results]
     (cond (empty? area) results
           (= card (first area)) (concat results (rest area))
-          :else (recur game card (rest area) (concat results (first area)))
+          :else (recur game card (rest area) (concat results (first area))))))
 
 (defn add-card
   "Add card to an area"
@@ -104,6 +104,6 @@
   [game player]
   (let [chosen-boost (get-card game player [player :areas :hand])]
     (-> game
-        (remove-card choosen-boost [player :areas :hand])
-        (add-card (assoc choosen-boost 1 :face-up) [player :areas :boost])
-        ((:boost-text key-to-character choosen-boost) :placement player)))) ;; Call the placement function
+        (remove-card chosen-boost [player :areas :hand])
+        (add-card (assoc chosen-boost 1 :face-up) [player :areas :boost])
+        ((:boost-text key-to-character chosen-boost) :placement player)))) ;; Call the placement function
