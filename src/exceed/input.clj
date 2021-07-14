@@ -9,3 +9,8 @@
   For now it's just a dummy function."
   [player type bounds]
   2)
+
+(defn get-card ;; TODO: Dummy function
+  "Has the player chose from one of the cards at location"
+  [game player location]
+  [player :face-up :normal :assault])

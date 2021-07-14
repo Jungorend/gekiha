@@ -1,5 +1,6 @@
 (ns exceed.core
   (:require [exceed.card.normals]
+            [exceed.input :refer [get-card]]
             [exceed.characters.season-three]))
 
 ;; Notes for order of attacking
@@ -17,7 +18,13 @@
   (case character :ryu exceed.characters.season-three/ryu
                   :normal exceed.card.normals/normals
                   :else exceed.characters.season-three/ryu)) ;; Off-chance that an invalid keyword is called, treat as Ryu.
-
+(defn key-to-character
+  "This takes in the vector and returns the card details themselves"
+  [character]
+  (let [c (get-character-info (nth character 3))]
+  (if (= :normal (nth character 2))
+    ((nth character 2) c)
+    ((nth character 2) (:cards c)))))
 
 (defn create-deck
   "This sets up the starting deck for each character.
@@ -76,3 +83,27 @@
       :phase :mulligan
       :p1 (create-player p1-character p1-first?)
       :p2 (create-player p2-character (not p1-first?))}))
+
+(defn remove-card
+  "Remove card from an area"
+  ([game card area] (assoc-in game area (remove-card game card (get-in game area) []))
+  ([game card area results]
+    (cond (empty? area) results
+          (= card (first area)) (concat results (rest area))
+          :else (recur game card (rest area) (concat results (first area)))
+
+(defn add-card
+  "Add card to an area"
+  [game card area]
+  (assoc-in game area (conj (get-in game area) card)))
+
+(defn play-boost
+  "Provides cards in hand, and based on which one player wants
+  puts its in the boost area and calls its placement effects.
+  Moves the card to face-up position if it isn't."
+  [game player]
+  (let [chosen-boost (get-card game player [player :areas :hand])]
+    (-> game
+        (remove-card choosen-boost [player :areas :hand])
+        (add-card (assoc choosen-boost 1 :face-up) [player :areas :boost])
+        ((:boost-text key-to-character choosen-boost) :placement player)))) ;; Call the placement function
