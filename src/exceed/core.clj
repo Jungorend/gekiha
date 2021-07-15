@@ -16,15 +16,15 @@
 (defn get-character-info
   [character]
   (case character :ryu exceed.characters.season-three/ryu
-                  :normal exceed.card.normals/normals
-                  :else exceed.characters.season-three/ryu)) ;; Off-chance that an invalid keyword is called, treat as Ryu.
+                  :normal exceed.card.normals/normals )) ;; Off-chance that an invalid keyword is called, treat as Ryu.
+
 (defn key-to-character
   "This takes in the vector and returns the card details themselves"
   [character]
-  (let [c (get-character-info (nth character 3))]
+  (let [c (get-character-info (nth character 2))]
   (if (= :normal (nth character 2))
-    ((nth character 2) c)
-    ((nth character 2) (:cards c)))))
+    ((nth character 3) c)
+    ((nth character 3) (:cards c)))))
 
 (defn create-deck
   "This sets up the starting deck for each character.
@@ -86,11 +86,11 @@
 
 (defn remove-card
   "Remove card from an area"
-  ([game card area] (assoc-in game area (remove-card game card (get-in game area) [])))
+  ([game card area] (assoc-in game area (into [] (remove-card game card (get-in game area) []))))
   ([game card area results]
     (cond (empty? area) results
           (= card (first area)) (concat results (rest area))
-          :else (recur game card (rest area) (concat results (first area))))))
+          :else (recur game card (rest area) (conj results (first area))))))
 
 (defn add-card
   "Add card to an area"
@@ -106,4 +106,4 @@
     (-> game
         (remove-card chosen-boost [player :areas :hand])
         (add-card (assoc chosen-boost 1 :face-up) [player :areas :boost])
-        ((:boost-text key-to-character chosen-boost) :placement player)))) ;; Call the placement function
+        ((:boost-text (key-to-character chosen-boost)) :placement player))))

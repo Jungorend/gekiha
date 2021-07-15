@@ -13,4 +13,4 @@
 (defn get-card ;; TODO: Dummy function
   "Has the player chose from one of the cards at location"
   [game player location]
-  [player :face-up :normal :assault])
+  [player :face-down :normal :assault])

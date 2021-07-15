@@ -25,16 +25,17 @@
   {:assault (make-attackcard
     "Assault"
     [:force 0] 5 4 [1 1] 0 0
-    (fn [state game active-player]
+    (fn [game state active-player]
       (case state :before (move game active-player 2 :close)
         :hit (assoc game :next-player active-player)
         :else game))
     "Backstep"
     false
     [:force 0]
-    (fn [state game active-player]
-      (let [move-value (request-player-input active-player :number [0 4])]
-        (move game active-player move-value :retreat))))
+    (fn [game state active-player]
+      (if (= state :placement)
+        (let [move-value (request-player-input active-player :number [0 4])]
+          (move game active-player move-value :retreat)))))
 
     :cross (make-attackcard
       "Cross"
@@ -45,14 +46,14 @@
       "Run"
       false
       [:force 0]
-      (fn [state game active-player]
+      (fn [game state active-player]
         (let [move-value (request-player-input active-player :number [0 3])]
           (move game active-player move-value :advance))))
 
     :grasp (make-attackcard
       "Grasp"
       [:force 0] 7 3 [1 1] 0 0
-      (fn [state game active-player]
+      (fn [game state active-player]
         (case state :hit (let [receiving-player (if (= :p1 active-player) :p2 :p1)]
             (if (get-in game [:receiving-player :status :can-be-pushed])
               (move game receiving-player (request-player-input active-player :number [-2 2]) :advance)
@@ -61,7 +62,7 @@
       "Fierce"
       true
       [:force 0]
-      (fn [state game active-player]
+      (fn [game state active-player]
         (if (= state :placement)
           (assoc-in game [active-player :modifiers :power] (+ 2 (get-in game [active-player :modifiers :power])))
           game)))
@@ -69,7 +70,7 @@
     :dive (make-attackcard
       "Dive"
       [:force 0] 4 4 [1 1] 0 0
-      (fn [state game active-player]
+      (fn [game state active-player]
         (case state :before (let [new-movement (move game active-player 3 :advance)
                                   original-space (get-space [active-player (get-in game [active-player :character])] (:play-area game))
                                   new-space      (get-space [active-player (get-in new-movement [active-player :character])] (:play-area new-movement))
@@ -82,6 +83,6 @@
       "Tech"
       false
       [:force 0]
-      (fn [state game active-player] ;; TODO: Implement Tech
+      (fn [game state active-player] ;; TODO: Implement Tech
         game))
       })
