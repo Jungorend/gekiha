@@ -16,7 +16,7 @@
 (defn get-character-info
   [character]
   (case character :ryu exceed.characters.season-three/ryu
-                  :normal exceed.card.normals/normals )) ;; Off-chance that an invalid keyword is called, treat as Ryu.
+                  :normal exceed.card.normals/normals ))
 
 (defn key-to-character
   "This takes in the vector and returns the card details themselves"
@@ -38,7 +38,7 @@
   "Returns a list of the boosts owned by player in whichever draw area."
   [player area]
   (->> area
-    (filter #(or (= :face-up (second %)) (= :face-down (second %))))
+    (filter #(or (= player (first %)) (= :face-up (second %)) (= :face-down (second %))))
     (map #(:boost-name ((nth % 3) (if (= :normal (nth % 2))
                                       (get-character-info (nth % 2))
                                       (:cards (get-character-info (nth % 2)))))))))
