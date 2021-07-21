@@ -44,10 +44,11 @@
     :advance (get-in game [player :status :can-move])
     :close (get-in game [player :status :can-move])
     :retreat (get-in game [player :status :can-move])
-    :push (get-in game [player :status :can-be-pushed])
+    :push (get-in game [(if (= player :p1) :p2 :p1) :status :can-be-pushed])
+    :pull (get-in game [(if (= player :p1) :p2 :p1) :status :can-be-pushed])
     :else false))
 
-(defn move ;; May need to return details for future knowledge. Force-point cost, crossed over, etc. TODO: :push
+(defn move ;; May need to return details for future knowledge. Force-point cost, crossed over, etc.
   "Handles character movement on the board to ensure legal moves are made.
   `type` refers to whether this is an advance, retreat, close, or move.
   Negative movement is not taken into account. To ensure no issues, only pass in positive values."
@@ -77,7 +78,7 @@
                                    (= 1 player-facing) (max 0 (- opponent-space move-value 1))
                                    (< move-value distance) (+ opponent-space move-value)
                                    (= 8 old-space) 7
-                                   :else (+ opponent-space move-value 1)))
+                                   :else (min 8 (+ opponent-space move-value 1))))
             :advance (cond (< move-value distance) (move-character (+ old-space (* move-value player-facing)))
                            (and (> (+ old-space (* player-facing move-value) 1) 8) (= opponent-space 8)) (move-character 7)
                            (> (+ old-space (* player-facing move-value) 1 ) 8) (move-character 8)
@@ -85,3 +86,4 @@
                            (< (+ old-space (* player-facing move-value) -1) 0) (move-character 0)
                            :else (move-character (+ old-space (* player-facing (+ move-value 1)))))))
        game)))
+
