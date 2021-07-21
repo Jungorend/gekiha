@@ -33,10 +33,9 @@
               false
               [:force 0]
               (fn [game state active-player]
-                (case (= state :placement)
-                  (let [move-value (request-player-input active-player :number [0 4])]
-                    (move game active-player move-value :retreat))
-                  game)))
+                (case state :placement (move game active-player
+                                             (request-player-input active-player :number [0 4]) :retreat)
+                            game)))
 
    :cross (make-attackcard
                        "Cross"

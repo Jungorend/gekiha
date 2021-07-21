@@ -1,5 +1,6 @@
 (ns exceed.core
   (:require [exceed.card.normals]
+            [exceed.utilities :refer [add-card remove-card]]
             [exceed.input :refer [get-card]]
             [exceed.characters.season-three]))
 
@@ -13,25 +14,22 @@
 ;; states
 ;; placement, reveal, hit before after cleanup
 
-(defn get-character-info
+(defn get-card-info
+  "This takes in a card from an area and returns its details"
   [character]
-  (case character :ryu exceed.characters.season-three/ryu
-                  :normal exceed.card.normals/normals ))
-
-(defn key-to-character
-  "This takes in the vector and returns the card details themselves"
-  [character]
-  (let [c (get-character-info (nth character 2))]
-  (if (= :normal (nth character 2))
-    ((nth character 3) c)
-    ((nth character 3) (:cards c)))))
+  (let [c (case (nth character 2)
+            :ryu exceed.characters.season-three/ryu
+            :normal exceed.card.normals/normals)]
+    ((nth character 3) (if (= :normal (nth character 2))
+                         c
+                         (:cards c)))))
 
 (defn create-deck
   "This sets up the starting deck for each character.
   Decks consist of 2 of every normal, as well as 2 of every special and ultra unique to the character."
   [character player]
   (shuffle (concat
-    (map #(vector player :face-down character %) (take 14 (cycle (keys (:cards (get-character-info character))))))
+    (map #(vector player :face-down character %) (take 14 (cycle (keys (:cards (get-card-info character))))))
     (map #(vector player :face-down :normal %) (take 16 (cycle (keys exceed.card.normals/normals)))))))
 
 (defn get-boosts
@@ -40,8 +38,8 @@
   (->> area
     (filter #(or (= player (first %)) (= :face-up (second %)) (= :face-down (second %))))
     (map #(:boost-name ((nth % 3) (if (= :normal (nth % 2))
-                                      (get-character-info (nth % 2))
-                                      (:cards (get-character-info (nth % 2)))))))))
+                                      (get-card-info (nth % 2))
+                                      (:cards (get-card-info (nth % 2)))))))))
 
 (defn create-player
   "Create initial player stats"
@@ -84,20 +82,8 @@
       :p1 (create-player p1-character p1-first?)
       :p2 (create-player p2-character (not p1-first?))}))
 
-(defn remove-card
-  "Remove card from an area"
-  ([game card area] (assoc-in game area (into [] (remove-card game card (get-in game area) []))))
-  ([game card area results]
-    (cond (empty? area) results
-          (= card (first area)) (concat results (rest area))
-          :else (recur game card (rest area) (conj results (first area))))))
-
-(defn add-card
-  "Add card to an area"
-  [game card area]
-  (assoc-in game area (conj (get-in game area) card)))
-
 (defn play-boost
+  ;; TODO: Implement removing boosts that are not continuous
   "Provides cards in hand, and based on which one player wants
   puts its in the boost area and calls its placement effects.
   Moves the card to face-up position if it isn't."
@@ -106,4 +92,4 @@
     (-> game
         (remove-card chosen-boost [player :areas :hand])
         (add-card (assoc chosen-boost 1 :face-up) [player :areas :boost])
-        ((:boost-text (key-to-character chosen-boost)) :placement player))))
+        ((:boost-text (get-card-info chosen-boost)) :placement player))))

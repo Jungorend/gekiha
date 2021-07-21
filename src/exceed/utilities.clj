@@ -1,9 +1,14 @@
 (ns exceed.utilities)
 
-(defn remove-first
-  "This removes the first instance of an item in a vector.
-  Useful for the play area and decks."
-  ([area item] (remove-first area item []))
-  ([area item results] (cond (empty? area) results
-                             (= (first area) item) (concat (rest area) results)
-                             :else (recur (rest area) item (conj results (first area))))))
+(defn remove-card
+  "Remove card from an area"
+  ([game card area] (assoc-in game area (into [] (remove-card game card (get-in game area) []))))
+  ([game card area results]
+   (cond (empty? area) results
+         (= card (first area)) (concat results (rest area))
+         :else (recur game card (rest area) (conj results (first area))))))
+
+(defn add-card
+  "Add card to an area"
+  [game card area]
+  (assoc-in game area (conj (get-in game area) card)))
