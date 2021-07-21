@@ -50,13 +50,14 @@
 (defn move ;; May need to return details for future knowledge. Force-point cost, crossed over, etc. TODO: :push
   "Handles character movement on the board to ensure legal moves are made.
   `type` refers to whether this is an advance, retreat, close, or move.
-  Negative movement is to the beginning of the arena, positive movement towards the end."
+  Negative movement is not taken into account. To ensure no issues, only pass in positive values."
   [game player move-value type]
   (let [p1-space (get-space [:p1 (get-in game [:p1 :character])] (:play-area game))
         p2-space (get-space [:p2 (get-in game [:p2 :character])] (:play-area game))
         old-space (if (= player :p1) p1-space p2-space)
+        opponent (if (= player :p1) :p2 :p1)
         opponent-space (if (= player :p1) p2-space p1-space)
-        player-facing (if (> old-space opponent-space) -1 1) ;; -1 for towards 0, 1 towards 8
+        player-facing (if (> old-space opponent-space) -1 1) ;; -1 player is on right, 1 player is on left
         distance (get-range game)
         move-character (partial move-card (:play-area game) [player (get-in game [player :character])] old-space)]
      (if (can-move? game player type)
@@ -66,6 +67,17 @@
                                        (max (- old-space (* move-value player-facing)) 0)
                                        (min (- old-space (* move-value player-facing)) 8)))
             :close (move-character (+ old-space (* (min move-value (dec distance)) player-facing)))
+            :push (move-card (:play-area  game) [opponent (get-in game [opponent :character])] opponent-space
+                             (if (= 1 player-facing)
+                               (min (+ opponent-space move-value) 8)
+                               (max (- opponent-space move-value) 0)))
+            :pull (move-card (:play-area game) [opponent (get-in game [opponent :character])] opponent-space
+                             (cond (and (= 1 player-facing) (< move-value distance)) (- opponent-space move-value)
+                                   (and (= 1 player-facing) (= 0 old-space)) 1
+                                   (= 1 player-facing) (max 0 (- opponent-space move-value 1))
+                                   (< move-value distance) (+ opponent-space move-value)
+                                   (= 8 old-space) 7
+                                   :else (+ opponent-space move-value 1)))
             :advance (cond (< move-value distance) (move-character (+ old-space (* move-value player-facing)))
                            (and (> (+ old-space (* player-facing move-value) 1) 8) (= opponent-space 8)) (move-character 7)
                            (> (+ old-space (* player-facing move-value) 1 ) 8) (move-character 8)
