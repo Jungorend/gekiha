@@ -21,7 +21,7 @@
   (let [game (setup-game :ryu :ryu :p1)
         cant-move-set (assoc-in game [:p1 :status :can-move] false)]
     (testing "Confirm that Retreat moves back 2 spaces"
-      (is (= [[:p1 :ryu]] (confirm-space ((get-in normals [:assault :boost-text]) nil game :p1) 0)))
-      (is (= [[:p2 :ryu]] (confirm-space ((get-in normals [:assault :boost-text]) nil game :p2) 8))))
+      (is (= [[:p1 :ryu]] (confirm-space ((get-in normals [:assault :boost-text]) game :placement :p1) 0)))
+      (is (= [[:p2 :ryu]] (confirm-space ((get-in normals [:assault :boost-text]) game :placement :p2) 8))))
     (testing "Doesn't Retreat when can't move is set"
-      (is (= [[:p1 :ryu]] (confirm-space ((get-in normals [:assault :boost-text]) nil cant-move-set :p1) 2))))))
+      (is (= [[:p1 :ryu]] (confirm-space ((get-in normals [:assault :boost-text]) cant-move-set :placement :p1) 2))))))
