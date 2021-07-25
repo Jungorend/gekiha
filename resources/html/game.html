@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title>Unofficial Exceed Fighting System</title>
+</head>
+<body>
+<div class="sidebar">
+    <a href="/home">
+        <img src="/images/logo.png"/>
+    </a>
+    <div class="history">
+        <button id="scroll-history-up"></button>
+        <div id="history-text"></div>
+        <button id="scroll-history-down"></button>
+    </div>
+</div>
+<div class="game-container">
+    <canvas id="game"></canvas>
+</div>
+<div class="footer"></div>
+{% block page-scripts %}
+  {% script "/js/app.js" %}
+{% endblock %}
+</body>
+</html>

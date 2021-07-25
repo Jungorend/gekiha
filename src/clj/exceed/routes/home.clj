@@ -12,10 +12,14 @@
 (defn about-page [request]
   (layout/render request "about.html"))
 
+(defn game-page [request]
+  (layout/render request "game.html"))
+
 (defn home-routes []
   [ "" 
    {:middleware [middleware/wrap-csrf
                  middleware/wrap-formats]}
    ["/" {:get home-page}]
+   ["/game" {:get game-page}]
    ["/about" {:get about-page}]])
 

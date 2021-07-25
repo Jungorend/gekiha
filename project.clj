@@ -1,6 +1,6 @@
 (defproject exceed "0.1.0"
   :description "Exceed Fighting System with rules-enforcement. Intended to be played in the browser."
-  :jvm-opts ["-Dclojure.server.repl={:port 5555 :accept clojure.core.server/repl}"]
+  ;;:jvm-opts ["-Dclojure.server.repl={:port 5555 :accept clojure.core.server/repl}"]
   :url "http://yonayonayona.net"
   :license {:name "MIT License"}
   :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
@@ -35,7 +35,6 @@
                  [reagent "1.0.0"]]
 
   :min-lein-version "2.0.0"
-  :repl-options {:init-ns exceed.core}
 
   :source-paths ["src/clj" "src/cljc"]
   :test-paths ["test/clj"]
@@ -51,7 +50,7 @@
           :compiler {:output-to "target/cljsbuild/public/js/app.js"
                      :output-dir "target/cljsbuild/public/js/out"
                      :main "exceed.core"
-                     :asset-path "js/out"
+                     :asset-path "/js/out"
                      :optimizations :none
                      :source-map true
                      :pretty-print true}}}}
@@ -66,7 +65,7 @@
   {:uberjar {:omit-source true
              :aot :all
              :uberjar-name "exceed.jar"
-             :source-paths ["env/prod/clj" ]
+             :source-paths ["env/prod/clj"]
              :resource-paths ["env/prod/resources"]}
 
    :dev           [:project/dev :profiles/dev]
@@ -81,9 +80,9 @@
                                  [jonase/eastwood "0.3.5"]
                                  [cider/cider-nrepl "0.26.0"]]
 
-                  :source-paths ["env/dev/clj" ]
+                  :source-paths ["env/dev/clj"]
                   :resource-paths ["env/dev/resources"]
-                  :repl-options {:init-ns user
+                  :repl-options {:init-ns exceed.core
                                  :timeout 120000}
                   :injections [(require 'pjstadig.humane-test-output)
                                (pjstadig.humane-test-output/activate!)]}
