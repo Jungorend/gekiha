@@ -25,18 +25,6 @@
       <div class="history">
           <img src="/img/arrow_circle_up_black_24dp.svg" alt="scroll history up" class="scroll-btn" id="scroll-history-up">
           <div id="history-text">
-            <ul>
-              <li><p>Player boosted Backstep.</p></li>
-              <li><p>Opponent initiated a strike.</p></li>
-              <hr><li><h3 class="strike">Strike!</h3><li>
-              <li><p>Player had Cross.</p></li>
-              <li><p>Opponent had EX-Block.</p></li>
-              <li><p>Opponent spent 1 force on Block.</p></li>
-              <hr><li><h3 class="turn">Turn 4</h3></li>
-              <li><p>Player spent a Grasp from hand to move 1.</p></li>
-              <li><p>Opponent Prepared</p></li>
-              <hr><li><h3 class="turn">Turn 5</h3></li>
-            </ul>
           </div>
           <img src="/img/arrow_circle_down_black_24dp.svg" alt="scroll history down" class="scroll-btn" id="scroll-history-down">
       </div>
@@ -45,6 +33,9 @@
         <canvas id="game"></canvas>
     </div>
     <div class="footer"><p>Hypothetical cards go here.</p></div>
+    {% block page-scripts %}
+        {% script "/js/app.js" %}
+    {% endblock %}
 </div>
 </body>
 </html>
