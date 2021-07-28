@@ -1,0 +1,86 @@
+body {
+  margin: 0;
+  font-family: 'Cormorant', serif;
+  background-color: #4DB788;
+  color: #958989;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 10% auto;
+  grid-template-rows: 10% 80% auto;
+  grid-column-gap: 0px;
+  grid-template-areas: 
+  "sidebar game"
+  "sidebar game"
+  "sidebar footer";
+  height: 100%;
+}
+
+h3.strike {
+  font-style: italic;
+}
+
+.logo {
+  width: 45%;
+}
+
+.scroll-btn {
+  width: 20%;
+}
+
+.scroll-btn:hover {
+  filter: invert(100%) sepia(41%) saturate(3951%) hue-rotate(311deg) brightness(111%) contrast(80%);
+}
+
+.history {
+  background-color: #395050;
+  text-align: center;
+}
+
+.history hr {
+  border: 1px solid;
+}
+
+.game-container {
+  background-color: #80C8B5;
+  grid-area: game;
+  width: 100%;
+}
+
+nav {
+  font-size: 1.3em;
+  margin: 0 0 1em 3em;
+}
+
+nav a {
+  text-decoration: none;
+}
+
+.footer {
+  background-color: #E6C973;
+  grid-area: footer;
+}
+
+.history h3 {
+  color: #BFB3B3;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.logo {
+  margin: 3% 1%;
+  max-width: 100%;
+}
+
+.sidebar {
+  grid-area: sidebar;
+}
+
+.history h3 {
+  font-family: 'Playfair Display SC', serif;
+}
