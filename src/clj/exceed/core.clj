@@ -69,6 +69,8 @@
 ;; After both players -> Cleanup effects, discard cards
 
 ;; TODO: player turns, strikes
+;; TODO: Macro to make attack cards easier (not need fn [game active-player] on everything
+;; TODO: State between client and server
 
 ;; states
 ;; placement, reveal, hit before after cleanup
@@ -157,4 +159,4 @@
     (-> game
         (remove-card chosen-boost [player :areas :hand])
         (add-card (assoc chosen-boost 1 :face-up) [player :areas :boost])
-        ((:boost-text (get-card-info chosen-boost)) :placement player))))
+        ((:placement (:boost-text (get-card-info chosen-boost))) player))))
