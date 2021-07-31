@@ -145,9 +145,30 @@
     {:play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
       :next-player (if p1-first? :p2 :p1)
       :current-player first-player
+      :actions_required {}                                  ;; Which actions the players need to do
       :phase :mulligan
       :p1 (create-player p1-character p1-first?)
       :p2 (create-player p2-character (not p1-first?))}))
+
+(defn display-view
+  "This converts the game that the server uses, for the view the player can see.
+  As a result all hidden decks are replaced with the number of cards remaining, and
+  in areas where they can be mix-matched such as the boost area, face-down cards are stripped
+  of information besides the player and they are there."
+  [game player]
+  (let [other-player (if (= :p1 player) :p2 :p1)]
+    (-> game
+        (update-in [other-player :areas :hand] #(count %))
+        (update-in [other-player :areas :draw] #(count %))
+        (update-in [other-player :areas :boost] (fn [boosts] (map
+                                                               #(if (= :face-down (second %))
+                                                                  [(first %) :face-down]
+                                                                  %) boosts)))
+        (update-in [other-player :areas :strike] (fn [boosts] (map
+                                                                #(if (= :face-down (second %))
+                                                                   [(first %) :face-down]
+                                                                   %) boosts)))
+        (update-in [player :areas :draw] #(count %)))))
 
 (defn play-boost
   ;; TODO: Implement removing boosts that are not continuous
@@ -160,3 +181,5 @@
         (remove-card chosen-boost [player :areas :hand])
         (add-card (assoc chosen-boost 1 :face-up) [player :areas :boost])
         ((:placement (:boost-text (get-card-info chosen-boost))) player))))
+
+(def *game-list* (atom (setup-game :ryu :ryu :p1)))         ;; TODO: map of session: game to accommodate multiple games
