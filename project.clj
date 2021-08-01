@@ -4,17 +4,21 @@
   :url "http://yonayonayona.net"
   :license {:name "MIT License"}
   :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
+                 [cheshire "5.10.0"]
                  [clojure.java-time "0.3.2"]
+                 [com.h2database/h2 "1.4.200"]
+                 [conman "0.9.1"]
                  [cprop "0.1.17"]
                  [expound "0.8.9"]
                  [funcool/struct "1.4.0"]
-                 [json-html "0.4.7"]
+                 [luminus-http-kit "0.1.9"]
+                 [luminus-migrations "0.7.1"]
                  [luminus-transit "0.1.2"]
                  [luminus-undertow "0.1.11"]
                  [luminus/ring-ttl-session "0.3.3"]
                  [markdown-clj "1.10.5"]
                  [metosin/muuntaja "0.6.8"]
-                 [metosin/reitit "0.5.13"]
+                 [metosin/reitit "0.5.10"]
                  [metosin/ring-http-response "0.9.2"]
                  [mount "0.1.16"]
                  [nrepl "0.8.3"]
@@ -82,7 +86,7 @@
 
                   :source-paths ["env/dev/clj"]
                   :resource-paths ["env/dev/resources"]
-                  :repl-options {:init-ns exceed.core
+                  :repl-options {:init-ns user
                                  :timeout 120000}
                   :injections [(require 'pjstadig.humane-test-output)
                                (pjstadig.humane-test-output/activate!)]}
