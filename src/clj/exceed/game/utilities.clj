@@ -1,4 +1,4 @@
-(ns exceed.utilities)
+(ns exceed.game.utilities)
 
 (defn remove-card
   "Remove card from an area"

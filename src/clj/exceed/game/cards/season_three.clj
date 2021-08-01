@@ -1,6 +1,6 @@
-(ns exceed.characters.season-three
-  (:require [exceed.card.normals :refer [make-attackcard make-ability]]
-    [exceed.movement :refer [move]]))
+(ns exceed.game.cards.season-three
+  (:require [exceed.game.cards.normals :refer [make-attackcard make-ability]]
+    [exceed.game.movement :refer [move]]))
 
 (def ryu
   {:cards {

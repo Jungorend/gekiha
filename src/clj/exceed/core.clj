@@ -9,10 +9,10 @@
     [clojure.tools.logging :as log]
     [mount.core :as mount]
     ;; exceed
-    [exceed.card.normals]
-    [exceed.utilities :refer [add-card remove-card]]
-    [exceed.input :refer [get-card]]
-    [exceed.characters.season-three])
+    [exceed.game.cards.normals]
+    [exceed.game.utilities :refer [add-card remove-card]]
+    [exceed.game.input :refer [get-card]]
+    [exceed.game.cards.season-three])
   (:gen-class))
 
 ;; log uncaught exceptions in threads
@@ -95,8 +95,8 @@
   "This takes in a card from an area and returns its details"
   [character]
   (let [c (case (nth character 2)
-            :ryu exceed.characters.season-three/ryu
-            :normal exceed.card.normals/normals)]
+            :ryu exceed.game.cards.season-three/ryu
+            :normal exceed.game.cards.normals/normals)]
     ((nth character 3) (if (= :normal (nth character 2))
                          c
                          (:cards c)))))
@@ -104,8 +104,8 @@
 (defn get-character-info
   [character]
   (case character
-    :ryu exceed.characters.season-three/ryu
-    :normal exceed.card.normals/normals))
+    :ryu exceed.game.cards.season-three/ryu
+    :normal exceed.game.cards.normals/normals))
 
 (defn create-deck
   "This sets up the starting deck for each character.
@@ -113,7 +113,7 @@
   [character player]
   (shuffle (concat
     (map #(vector player :face-down character %) (take 14 (cycle (keys (:cards (get-character-info character)))))) ;; fake card
-    (map #(vector player :face-down :normal %) (take 16 (cycle (keys exceed.card.normals/normals)))))))
+    (map #(vector player :face-down :normal %) (take 16 (cycle (keys exceed.game.cards.normals/normals)))))))
 
 (defn get-boosts
   "Returns a list of the boosts owned by player in whichever draw area."

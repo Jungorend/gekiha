@@ -1,5 +1,5 @@
-(ns exceed.movement
-  (:require [exceed.utilities :refer [remove-card add-card]]))
+(ns exceed.game.movement
+  (:require [exceed.game.utilities :refer [remove-card add-card]]))
 
 ;; This contains all the utility functions for basic movement either from boosts
 ;; or strikes. The primary functions to use are get-space to locate the space of an object

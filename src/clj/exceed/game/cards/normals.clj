@@ -1,6 +1,6 @@
-(ns exceed.card.normals
-  (:require [exceed.movement :refer [move get-space]]
-            [exceed.input :refer [request-player-input]]))
+(ns exceed.game.cards.normals
+  (:require [exceed.game.movement :refer [move get-space]]
+            [exceed.game.input :refer [request-player-input]]))
 
 (defn make-attackcard
   [name cost speed power range armor guard card-text boost-name boost-continuous? boost-cost boost-text]

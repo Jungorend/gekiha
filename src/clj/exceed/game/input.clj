@@ -1,4 +1,4 @@
-(ns exceed.input)
+(ns exceed.game.input)
 
 (defn request-player-input ;; TODO: implement player input.
   "This function is the interface between the game logic and making changes.
