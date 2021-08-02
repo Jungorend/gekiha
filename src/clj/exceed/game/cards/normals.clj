@@ -1,6 +1,5 @@
 (ns exceed.game.cards.normals
-  (:require [exceed.game.movement :refer [move get-space]]
-            [exceed.game.input :refer [request-player-input]]))
+  (:require [exceed.game.movement :refer [move get-space]]))
 
 (defn make-attackcard
   [name cost speed power range armor guard card-text boost-name boost-continuous? boost-cost boost-text]
@@ -38,8 +37,10 @@
               "Backstep"
               false
               [:force 0]
-              (make-ability :placement (move game active-player
-                                             (request-player-input active-player :number [0 4]) :retreat)))
+              (make-ability :placement (let [move-value (get-in game [:input-required :response])]
+                                         (if move-value
+                                           (assoc (move game active-player move-value :retreat) :input-required {})
+                                           (assoc game :input-required {active-player [[:number [0 4]] ['exceed.game.cards.normals/normals :assault :boost-text]]})))))
 
    :cross   (make-attackcard
               "Cross"
@@ -48,15 +49,20 @@
               "Run"
               false
               [:force 0]
-              (make-ability :placement (let [move-value (request-player-input active-player :number [0 3])]
-                              (move game active-player move-value :advance))))
+              (make-ability :placement (let [move-value (get-in game [:input-required :response])]
+                                         (if move-value
+                                           (assoc (move game active-player move-value :advance) :input-required {})
+                                           (assoc game :input-required {active-player [[:number [0 3]] ['exceed.game.cards.normals/normals :cross :boost-text]]})))))
 
    :grasp   (make-attackcard
               "Grasp"
               [:force 0] 7 3 [1 1] 0 0
               (make-ability :hit (let [receiving-player (if (= :p1 active-player) :p2 :p1)]
                                    (if (get-in game [:receiving-player :status :can-be-pushed])
-                                     (move game receiving-player (request-player-input active-player :number [-2 2]) :advance))))
+                                     (if (get-in game [:input-required :response])
+                                       (assoc (move game receiving-player (get-in game [:input-required :response]) :advance) :input-required {})
+                                       (assoc game :input-required {active-player [[:number [-2 2]] ['exceed.game.cards.normals/normals :grasp :card-text]]}))
+                                     game)))
               "Fierce"
               true
               [:force 0]

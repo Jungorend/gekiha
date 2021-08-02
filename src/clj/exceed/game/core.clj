@@ -1,7 +1,6 @@
 (ns exceed.game.core
   (:require     [exceed.game.cards.normals]
                 [exceed.game.utilities :refer [add-card remove-card]]
-                [exceed.game.input :refer [get-card]]
                 [exceed.game.cards.season-three]))
 
 ;; Notes for order of attacking
@@ -86,7 +85,7 @@
     {:play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
      :next-player (if p1-first? :p2 :p1)
      :current-player first-player
-     :actions_required {}                                  ;; Which actions the players need to do
+     :input-required {}                                  ;; Which actions the players need to do, :p1 or :p2. Response is set as :response
      :phase :mulligan
      :p1 (create-player p1-character p1-first?)
      :p2 (create-player p2-character (not p1-first?))}))
@@ -113,12 +112,14 @@
 
 (defn play-boost
   ;; TODO: Implement removing boosts that are not continuous
-  "Provides cards in hand, and based on which one player wants
-  puts its in the boost area and calls its placement effects.
+  "Provides cards in hand and based on which one players wants,
+  puts it in the boost arean and calls its placement effects.
   Moves the card to face-up position if it isn't."
   [game player]
-  (let [chosen-boost (get-card game player [player :areas :hand])]
-    (-> game
-        (remove-card chosen-boost [player :areas :hand])
-        (add-card (assoc chosen-boost 1 :face-up) [player :areas :boost])
-        ((:placement (:boost-text (get-card-info chosen-boost))) player))))
+  (let [chosen-boost (get-in game [:input-required :response])]
+    (if chosen-boost
+      (-> game
+          (remove-card chosen-boost [player :areas :hand])
+          (add-card (assoc chosen-boost 1 :face-up) [player :areas :boost])
+          (assoc ((:placement (:boost-text (get-card-info chosen-boost))) player) :input-required {}))
+      (assoc game :input-required {player [[:card [player :areas :hand]] ['exceed.game.core/core]]}))))
