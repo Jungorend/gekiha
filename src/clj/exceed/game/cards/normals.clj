@@ -40,7 +40,7 @@
               (make-ability :placement (let [move-value (get-in game [:input-required :response])]
                                          (if move-value
                                            (assoc (move game active-player move-value :retreat) :input-required {})
-                                           (assoc game :input-required {active-player [[:number [0 4]] ['exceed.game.cards.normals/normals :assault :boost-text]]})))))
+                                           (assoc game :input-required {active-player [[:number [0 4]] [:normal :assault :boost-text :placement]]})))))
 
    :cross   (make-attackcard
               "Cross"
@@ -52,7 +52,7 @@
               (make-ability :placement (let [move-value (get-in game [:input-required :response])]
                                          (if move-value
                                            (assoc (move game active-player move-value :advance) :input-required {})
-                                           (assoc game :input-required {active-player [[:number [0 3]] ['exceed.game.cards.normals/normals :cross :boost-text]]})))))
+                                           (assoc game :input-required {active-player [[:number [0 3]] [:normal :cross :boost-text :placement]]})))))
 
    :grasp   (make-attackcard
               "Grasp"
@@ -61,7 +61,7 @@
                                    (if (get-in game [:receiving-player :status :can-be-pushed])
                                      (if (get-in game [:input-required :response])
                                        (assoc (move game receiving-player (get-in game [:input-required :response]) :advance) :input-required {})
-                                       (assoc game :input-required {active-player [[:number [-2 2]] ['exceed.game.cards.normals/normals :grasp :card-text]]}))
+                                       (assoc game :input-required {active-player [[:number [-2 2]] [:normal :grasp :card-text :hit]]}))
                                      game)))
               "Fierce"
               true

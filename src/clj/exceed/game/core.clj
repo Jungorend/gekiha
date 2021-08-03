@@ -108,12 +108,25 @@
                                                                 #(if (= :face-down (second %))
                                                                    [(first %) :face-down]
                                                                    %) boosts)))
+        (update :input-required (fn [input]
+                                  (if (get input player)
+                                    {player (player input)}
+                                    {})))
         (update-in [player :areas :draw] #(count %)))))
+
+(defn send-response
+  "Provides a response to a function's request for player input."
+  [game player response]
+  (let [function-reference (get-in game [:input-required player 1])
+        game-with-response (assoc-in (dissoc game :input-required) [:input-required :response] response)]
+    ((get-in (get-character-info (first function-reference))
+             (vec (rest function-reference)))
+     game-with-response player)))
 
 (defn play-boost
   ;; TODO: Implement removing boosts that are not continuous
   "Provides cards in hand and based on which one players wants,
-  puts it in the boost arean and calls its placement effects.
+  puts it in the boost area and calls its placement effects.
   Moves the card to face-up position if it isn't."
   [game player]
   (let [chosen-boost (get-in game [:input-required :response])]
