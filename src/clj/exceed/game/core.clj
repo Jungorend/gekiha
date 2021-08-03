@@ -82,7 +82,17 @@
   "Creates initial game state. Inputs are characters and starting player"
   [p1-character p2-character first-player]
   (let [p1-first? (= :p1 first-player)]
-    {:play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
+    {:game-history [[:p "Player boosted Backstep."]         ;; this is just test code for now
+                    [:p "Opponent initiated a strike."]
+                    [:hr] [:h3 {:class "strike"} "Strike!"]
+                    [:p "Player had Cross."]
+                    [:p "Opponent had EX-Block."]
+                    [:p "Opponent spent 1 force on Block."]
+                    [:hr] [:h3 {:class "turn"} "Turn 4"]
+                    [:p "Player spent a Grasp from hand to move 1."]
+                    [:hr] [:h3 {:class "turn"} "Turn 5"]]
+
+     :play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
      :next-player (if p1-first? :p2 :p1)
      :current-player first-player
      :input-required {}                                  ;; Which actions the players need to do, :p1 or :p2. Response is set as :response
@@ -136,3 +146,5 @@
           (add-card (assoc chosen-boost 1 :face-up) [player :areas :boost])
           (assoc ((:placement (:boost-text (get-card-info chosen-boost))) player) :input-required {}))
       (assoc game :input-required {player [[:card [player :areas :hand]] ['exceed.game.core/core]]}))))
+
+(def *game-list* (atom (exceed.game.core/setup-game :ryu :ryu :p1)))         ;; TODO: map of session: game to accommodate multiple games

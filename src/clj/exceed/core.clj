@@ -76,5 +76,3 @@
     :else
     (start-app args)))
 
-
-(def *game-list* (atom (exceed.game.core/setup-game :ryu :ryu :p1)))         ;; TODO: map of session: game to accommodate multiple games

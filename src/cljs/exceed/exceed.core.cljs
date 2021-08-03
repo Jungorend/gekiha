@@ -1,23 +1,23 @@
 (ns exceed.core
   (:require [reagent.core :as r]
-            [reagent.dom :as dom]))
+            [reagent.dom :as dom]
+            [ajax.core :refer [GET POST]]))
 
-(def game-state (r/atom [[:p "Player boosted Backstep."]
-                         [:p "Opponent initiated a strike."]
-                          [:hr] [:h3 {:class "strike"} "Strike!"]
-                          [:p "Player had Cross."]
-                          [:p "Opponent had EX-Block."]
-                          [:p "Opponent spent 1 force on Block."]
-                         [:hr] [:h3 {:class "turn"} "Turn 4"]
-                          [:p "Player spent a Grasp from hand to move 1."]
-                         [:hr] [:h3 {:class "turn"} "Turn 7"]]))
+(def game-state (r/atom {}))
 
 (defn add-history! [new-state]
   (swap! game-state (conj @game-state new-state)))
 
 (defn display-history []
   (fn []
-    (apply vector :ul @game-state)))
+    (apply vector :ul (:game-history @game-state))))
 
-(dom/render
-  [display-history] (.getElementById js/document "history-text"))
+(defn get-gamestate []
+  (GET "/game-state"
+       {:headers       {"Accept" "application/transit+json"}
+        :handler       #((do (reset! game-state %)
+                             (dom/render [display-history] (.getElementById js/document "history-text"))))
+        :error-handler #(.log js/console (str "Error: " %))}))
+
+(get-gamestate)
+
