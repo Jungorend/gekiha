@@ -50,8 +50,8 @@
 
 (defn create-player
   "Create initial player stats"
-  [character first?]
-  (let [deck (create-deck character :p1)
+  [character player first?]
+  (let [deck (create-deck character player)
         draw-count (if first? 5 6)]
     {:health 30
      :character character
@@ -98,8 +98,8 @@
      :current-player first-player
      :input-required {}                                  ;; Which actions the players need to do, :p1 or :p2. Response is set as :response
      :phase :mulligan
-     :p1 (create-player p1-character p1-first?)
-     :p2 (create-player p2-character (not p1-first?))}))
+     :p1 (create-player p1-character :p1 p1-first?)
+     :p2 (create-player p2-character :p2 (not p1-first?))}))
 
 (defn display-view
   "This converts the game that the server uses, for the view the player can see.
@@ -136,8 +136,19 @@
 
 ;; Game engine functionality
 (defn prepare-action
-  [game player]
-  (draw-card game player 1))
+  [game]
+  (draw-card game (:current-player game) 1))
+
+(defn change-cards-action
+  [game]
+  (let [changed-cards (get-in game [:input-required :response])
+        player (:current-player game)]
+    (if changed-cards
+      (-> (reduce (fn [m [location card]]
+                    (remove-card m card location))
+                  game changed-cards)
+          (update-in [player :areas :discard] #(concat % (map #'second changed-cards)))
+          (draw-card player (count changed-cards))))))      ;; TODO: have ultras count for 2 force optionally
 
 (defn play-boost
   ;; TODO: Implement removing boosts that are not continuous
