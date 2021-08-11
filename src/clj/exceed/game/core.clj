@@ -1,6 +1,6 @@
 (ns exceed.game.core
   (:require     [exceed.game.cards.normals]
-                [exceed.game.utilities :refer [add-card remove-card]]
+                [exceed.game.utilities :refer [add-card remove-card draw-card reshuffle]]
                 [exceed.game.cards.season-three]))
 
 ;; Notes for order of attacking
@@ -56,6 +56,7 @@
     {:health 30
      :character character
      :exceeded? false
+     :reshuffled? false
      :modifiers {
                  :power 0
                  :speed 0
@@ -132,6 +133,11 @@
     ((get-in (get-character-info (first function-reference))
              (vec (rest function-reference)))
      game-with-response player)))
+
+;; Game engine functionality
+(defn prepare-action
+  [game player]
+  (draw-card game player 1))
 
 (defn play-boost
   ;; TODO: Implement removing boosts that are not continuous
