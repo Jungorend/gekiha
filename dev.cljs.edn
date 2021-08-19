@@ -1,0 +1,7 @@
+{:main exceed.core
+ :asset-path "/js/out"
+ :output-to "target/cljsbuild/public/js/app.js"
+ :output-dir "target/cljsbuild/public/js/out"
+ :optimizations :none
+ :source-map true
+ :pretty-print true}

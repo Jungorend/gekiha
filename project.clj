@@ -78,11 +78,13 @@
    :project/dev  {:jvm-opts ["-Dconf=dev-config.edn" ]
                   :dependencies [[pjstadig/humane-test-output "0.11.0"]
                                  [prone "2021-04-23"]
+                                 [com.bhauman/figwheel-main "0.2.14"]
                                  [ring/ring-devel "1.9.3"]
                                  [ring/ring-mock "0.4.0"]]
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.24.1"]
                                  [jonase/eastwood "0.3.5"]
                                  [cider/cider-nrepl "0.26.0"]]
+                  :aliases {"fig" ["trampoline" "run" "-m" "figwheel.main"]}
 
                   :source-paths ["env/dev/clj"]
                   :resource-paths ["env/dev/resources"]

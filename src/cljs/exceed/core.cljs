@@ -20,4 +20,3 @@
         :error-handler #(.log js/console (str "Error: " %))}))
 
 (get-gamestate)
-

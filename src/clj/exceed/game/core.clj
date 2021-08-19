@@ -139,15 +139,19 @@
   [game]
   (draw-card game (:current-player game) 1))
 
+(defn pay-focus
+  [game player focus]
+  (-> (reduce (fn [m [location card]]
+                (remove-card m card location))
+              game focus)
+      (update-in [player :areas :discard] #(concat % (map #'second focus)))))
+
 (defn change-cards-action
   [game]
   (let [changed-cards (get-in game [:input-required :response])
         player (:current-player game)]
     (if changed-cards
-      (-> (reduce (fn [m [location card]]
-                    (remove-card m card location))
-                  game changed-cards)
-          (update-in [player :areas :discard] #(concat % (map #'second changed-cards)))
+      (-> (pay-focus game player changed-cards)
           (draw-card player (count changed-cards))))))      ;; TODO: have ultras count for 2 force optionally
 
 (defn play-boost
