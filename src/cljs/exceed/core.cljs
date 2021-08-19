@@ -1,6 +1,7 @@
 (ns exceed.core
   (:require [reagent.core :as r]
             [reagent.dom :as dom]
+            [re-frame.core :as rf]
             [ajax.core :refer [GET POST]]))
 
 (def game-state (r/atom {}))
