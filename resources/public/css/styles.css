@@ -46,6 +46,16 @@ h3.strike {
   background-color: #80C8B5;
   grid-area: game;
   width: 100%;
+  color: #000000;
+}
+
+.game-container .play-area {
+  display: flex;
+  font-size: 2em;
+}
+
+.game-container .play-area .play-space {
+  margin: 3%;
 }
 
 nav {
@@ -83,4 +93,12 @@ ul {
 
 .history h3 {
   font-family: 'Playfair Display SC', serif;
+}
+
+.player-1 {
+  color: #006400;
+}
+
+.player-2 {
+  color: #000064;
 }

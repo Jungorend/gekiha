@@ -4,6 +4,12 @@
             [re-frame.core :as rf]
             [ajax.core :refer [GET POST]]))
 
+(defn keyword->name
+  [key]
+  (case key
+    :ryu "Ryu"
+    :ken "Ken"))
+
 (rf/reg-event-db
   :init
   (fn [_ _]
@@ -30,8 +36,12 @@
 
 (defn view-game-area
   []
-  (let [state @(rf/subscribe [:play-area])]
-    (reduce #(conj %1 (str %2)) [:p] state)))
+  (reduce (fn [results card]
+            (conj results (if (empty? card)
+                            [:div.play-space>p "X"]
+                            [:div.play-space>p (map #(vector :p {:class (if (= :p1 (first %)) "player-1" "player-2")}
+                                                             (keyword->name (second %))) card)])))
+          [:div.play-area] @(rf/subscribe [:play-area])))
 
 (defn get-gamestate []
   (GET "/game-state"
