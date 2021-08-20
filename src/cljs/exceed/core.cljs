@@ -38,7 +38,7 @@
   []
   (reduce (fn [results card]
             (conj results (if (empty? card)
-                            [:div.play-space>p "X"]
+                            [:div.play-space>p ""]
                             [:div.play-space>p (map #(vector :p {:class (if (= :p1 (first %)) "player-1" "player-2")}
                                                              (keyword->name (second %))) card)])))
           [:div.play-area] @(rf/subscribe [:play-area])))

@@ -51,11 +51,16 @@ h3.strike {
 
 .game-container .play-area {
   display: flex;
+  width: 100%;
   font-size: 2em;
 }
 
 .game-container .play-area .play-space {
+  border: 1px solid;
+  border-radius: 15px;
   margin: 3%;
+  flex-grow: 1;
+  text-align: center;
 }
 
 nav {
