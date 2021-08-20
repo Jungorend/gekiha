@@ -19,9 +19,19 @@
   (fn [db _]
     (get-in db [:game :game-history])))
 
+(rf/reg-sub
+  :play-area
+  (fn [db _]
+    (get-in db [:game :play-area])))
+
 (defn view-history
   []
-  (apply vector :ul @(rf/subscribe [:history])))
+  (reduce #(conj %1 [:li %2]) [:ul] @(rf/subscribe [:history])))
+
+(defn view-game-area
+  []
+  (let [state @(rf/subscribe [:play-area])]
+    (reduce #(conj %1 (str %2)) [:p] state)))
 
 (defn get-gamestate []
   (GET "/game-state"
@@ -30,7 +40,7 @@
         :error-handler #(.log js/console (str "Error: " %))}))
 
 (def game-outline
-  [:container.container
+  [:div.container
    [:div.sidebar
     [:nav
      [:a {:href "/home"}
@@ -44,7 +54,7 @@
       [view-history]]
      [:img#scroll-history-down.scroll-btn {:src "/img/arrow_circle_down_black_24dp.svg" :alt "scroll history down"}]]]
    [:div.game-container
-    [:canvas#game]]
+    [view-game-area]]
    [:div.footer>p "Hypothetical cards go here."]
    [:script {:type "text/javascript" :src "/js/app.js"}]])
 
