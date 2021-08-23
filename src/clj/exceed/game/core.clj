@@ -83,7 +83,7 @@
   "Creates initial game state. Inputs are characters and starting player"
   [p1-character p2-character first-player]
   (let [p1-first? (= :p1 first-player)]
-    {:game-history [[:p "Player boosted Backstep."]         ;; this is just test code for now
+    {:history [[:p "Player boosted Backstep."]         ;; this is just test code for now
                     [:p "Opponent initiated a strike."]
                     [:hr] [:h3 {:class "strike"} "Strike!"]
                     [:p "Player had Cross."]

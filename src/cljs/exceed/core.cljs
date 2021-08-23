@@ -4,6 +4,10 @@
             [re-frame.core :as rf]
             [ajax.core :refer [GET POST]]))
 
+;; TODO: Right now we're just assuming we're player 1 and there's no
+;; separation of sessions. When multiple games are possible each game needs to be stored
+;; by session ID
+
 (defn keyword->name
   [key]
   (case key
@@ -16,19 +20,32 @@
     {:game {}}))
 
 (rf/reg-event-db
-  :set-history
-  (fn [db [_ history]]
-    (assoc db :game history)))
+  :set-gamestate
+  (fn [db [_ gamestate]]
+    (-> (assoc db :game gamestate)
+        (update-in [:game :player] :p1))))
 
 (rf/reg-sub
   :history
   (fn [db _]
-    (get-in db [:game :game-history])))
+    (get-in db [:game :history])))
 
 (rf/reg-sub
   :play-area
   (fn [db _]
     (get-in db [:game :play-area])))
+
+(rf/reg-sub
+  :player-cards
+  (fn [db _]
+    (get-in db [:game
+                (get-in db [:game :player])
+                :areas])))
+
+(rf/reg-sub
+  :player
+  (fn [db _]
+    (get-in db [:game :player])))
 
 (defn view-history
   []
@@ -39,14 +56,25 @@
   (reduce (fn [results card]
             (conj results (if (empty? card)
                             [:div.play-space>p ""]
-                            [:div.play-space>p (map #(vector :p {:class (if (= :p1 (first %)) "player-1" "player-2")}
+                            [:div.play-space (map #(vector :p {:class (if (= :p1 (first %)) "player-1" "player-2")}
                                                              (keyword->name (second %))) card)])))
           [:div.play-area] @(rf/subscribe [:play-area])))
+
+(defn view-player-areas
+  "Displays the player's cards. Hand, discard, gauge, boost, draw deck."
+  []
+  (let [{:keys [hand deck gauge strike boost discard]} @(rf/subscribe [:player-cards])
+        player (rf/subscribe [:player])]
+    [:div.footer
+     [:div.gauge (map #(vector :p {:class (if (= :p1 player) "player-1" "player-2")} (str (nth % 3)))
+                      gauge)]
+     [:div.draw-deck [:p (str "Player deck count: " deck)]]
+     ]))
 
 (defn get-gamestate []
   (GET "/game-state"
        {:headers       {"Accept" "application/transit+json"}
-        :handler       #(rf/dispatch [:set-history %])
+        :handler       #(rf/dispatch [:set-gamestate %])
         :error-handler #(.log js/console (str "Error: " %))}))
 
 (def game-outline
@@ -65,7 +93,7 @@
      [:img#scroll-history-down.scroll-btn {:src "/img/arrow_circle_down_black_24dp.svg" :alt "scroll history down"}]]]
    [:div.game-container
     [view-game-area]]
-   [:div.footer>p "Hypothetical cards go here."]
+   [view-player-areas]
    [:script {:type "text/javascript" :src "/js/app.js"}]])
 
 (rf/dispatch-sync [:init])
