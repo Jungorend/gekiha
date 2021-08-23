@@ -1,7 +1,7 @@
 (ns exceed.game.core
   (:require     [exceed.game.cards.normals]
-                [exceed.game.utilities :refer [add-card remove-card draw-card reshuffle]]
-                [exceed.game.cards.season-three]))
+                [exceed.game.cards.season-three]
+                [exceed.game.utilities :refer [add-card remove-card draw-card reshuffle]]))
 
 ;; Notes for order of attacking
 ;; Reveal effects -> Calculate Speed -> Before Effects ->
