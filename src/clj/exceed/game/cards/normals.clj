@@ -1,5 +1,53 @@
 (ns exceed.game.cards.normals
-  (:require [exceed.game.movement :refer [move get-space]]))
+  (:require
+    [clojure.spec.alpha :as spec]
+    [exceed.game.movement :refer [move get-space]]))
+
+(defn non-neg-int?
+  [value]
+  (and (int? value) (not (neg? value))))
+
+(spec/def
+  ::cost
+  (spec/and vector?
+            #(= (count %) 2)
+            #(or (= :gauge (first %))
+                 (= :force (first %)))
+            #(non-neg-int? (second %))))
+
+(spec/def
+  ::boost-cost
+  (spec/and vector?
+            #(= (count %) 2)
+            #(or (= :gauge (first %))
+                 (= :force (first %)))
+            #(non-neg-int? (second %))))
+
+(spec/def
+  ::range
+  (spec/coll-of int? :count 2))
+
+
+(spec/def ::power non-neg-int?)
+(spec/def ::armor non-neg-int?)
+(spec/def ::guard non-neg-int?)
+(spec/def ::speed non-neg-int?)
+(spec/def ::boost-continuous? boolean?)
+(spec/def ::boost-name string?)
+(spec/def ::name string?)
+
+(spec/def
+  ::attackcard
+  (spec/keys :req-un [::cost
+                      ::power
+                      ::armor
+                      ::guard
+                      ::range
+                      ::speed
+                      ::name
+                      ::boost-name
+                      ::boost-continuous?
+                      ::boost-cost]))
 
 (defn make-attackcard
   [name cost speed power range armor guard card-text boost-name boost-continuous? boost-cost boost-text]

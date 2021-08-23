@@ -47,24 +47,10 @@
   :target-path "target/%s/"
   :main ^:skip-aot exceed.core
 
-  :plugins [[lein-cljsbuild "1.1.8"]]
-
-  :cljsbuild
-  {:builds
-   {:app {:source-paths ["src/cljs" "src/cljc"]
-          :compiler {:output-to "target/cljsbuild/public/js/app.js"
-                     :output-dir "target/cljsbuild/public/js/out"
-                     :main "exceed.core"
-                     :asset-path "/js/out"
-                     :optimizations :none
-                     :source-map true
-                     :pretty-print true}}}}
-
-  :clean-targets
-  ^{:protect false}
-  [:target-path
-   [:cljsbuild :builds :app :compiler :output-dir]
-   [:cljsbuild :builds :app :compiler :output-to]]
+  :plugins [[lein-codox "0.10.7"]]
+  :codox {
+          :metadata {:doc/format :markdown}
+          :source-uri "http://github.com/jungorend/gekiha/blob/{version}/{filepath}#L{line}"}
 
   :profiles
   {:uberjar {:omit-source true
