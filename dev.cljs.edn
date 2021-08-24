@@ -4,4 +4,6 @@
  :output-dir "target/cljsbuild/public/js/out"
  :optimizations :none
  :source-map true
+ :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true}
+ :preloads        [day8.re-frame-10x.preload]
  :pretty-print true}

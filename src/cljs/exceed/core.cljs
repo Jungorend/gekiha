@@ -22,8 +22,8 @@
 (rf/reg-event-db
   :set-gamestate
   (fn [db [_ gamestate]]
-    (-> (assoc db :game gamestate)
-        (update-in [:game :player] :p1))))
+    ;; TODO: Remove forced :p1 when users added
+    (assoc db :game (assoc gamestate :player :p1))))
 
 (rf/reg-sub
   :history
@@ -36,16 +36,15 @@
     (get-in db [:game :play-area])))
 
 (rf/reg-sub
-  :player-cards
-  (fn [db _]
-    (get-in db [:game
-                (get-in db [:game :player])
-                :areas])))
-
-(rf/reg-sub
   :player
   (fn [db _]
     (get-in db [:game :player])))
+
+(rf/reg-sub
+  :player-cards
+  (fn [db [_ player]]
+    (get-in db [:game player :areas])))
+
 
 (defn view-history
   []
@@ -63,12 +62,13 @@
 (defn view-player-areas
   "Displays the player's cards. Hand, discard, gauge, boost, draw deck."
   []
-  (let [{:keys [hand deck gauge strike boost discard]} @(rf/subscribe [:player-cards])
-        player (rf/subscribe [:player])]
+  (let [player @(rf/subscribe [:player])
+        {:keys [hand draw gauge strike boost discard]} @(rf/subscribe [:player-cards player])]
     [:div.footer
+     [:p "Gauge"]
      [:div.gauge (map #(vector :p {:class (if (= :p1 player) "player-1" "player-2")} (str (nth % 3)))
                       gauge)]
-     [:div.draw-deck [:p (str "Player deck count: " deck)]]
+     [:div.draw-deck [:p (str "Player deck count: " draw)]]
      ]))
 
 (defn get-gamestate []
