@@ -1,13 +1,18 @@
-# exceed
+# Gekiha
 
-Just seeing how much of the Exceed engine I can implement.
-And relearn Clojure while I'm at it.
+Webserver which hosts an implementation of the [Exceed Fighting System](https://www.level99games.com/collections/exceed-fighting-system)
+This is not officially supported by Level99, and instead just a project to see how much I can develop.
+
+## Goals
+- Registration/logging system.
+- Lobby for multiple games.
+- Season 3 cast to choose from.
+- Rules enforcement to reduce surface area for mistakes and/or cheating.
 
 ## Usage
 
-Right now there's no functionality. Movement on the board has been implemented
-but there's no cards or game state yet.
+Still under development, no functionality yet.
 
 ## License
 
-This is a private repository and no license has been set for it yet.
+MIT License, please see LICENSE file in project.

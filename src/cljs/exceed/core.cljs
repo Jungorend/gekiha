@@ -23,7 +23,7 @@
   :set-gamestate
   (fn [db [_ gamestate]]
     ;; TODO: Remove forced :p1 when users added
-    (assoc db :game (assoc gamestate :player :p1))))
+    (assoc db :game gamestate)))
 
 (rf/reg-sub
   :history
@@ -65,11 +65,13 @@
   (let [player @(rf/subscribe [:player])
         {:keys [hand draw gauge strike boost discard]} @(rf/subscribe [:player-cards player])]
     [:div.footer
-     [:p "Gauge"]
+     [:h3 "Gauge"]
      [:div.gauge (map #(vector :p {:class (if (= :p1 player) "player-1" "player-2")} (str (nth % 3)))
                       gauge)]
-     [:div.draw-deck [:p (str "Player deck count: " draw)]]
-     ]))
+     [:div.draw-deck [:h3 (str "Player deck count: " draw)]]
+     [:div.hand [:h3 "Hand of cards"] (map #(vector :p {:class (if (= :p1 player) "player-1" "player-2")} (str (nth % 3)))
+                     hand)]
+     [:div.discard [:h3 (str "Discard: " (count discard))]]]))
 
 (defn get-gamestate []
   (GET "/game-state"

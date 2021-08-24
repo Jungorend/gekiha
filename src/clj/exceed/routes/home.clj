@@ -17,7 +17,7 @@
   (layout/render request "game.html"))
 
 (defn game-state [_]
-  (response/ok (game/display-view @game/*game-list* :p1)))
+  (response/ok (game/display-view @game/game-list :p1)))
 
 (defn home-routes []
   [ "" 
