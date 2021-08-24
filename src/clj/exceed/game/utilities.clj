@@ -22,6 +22,13 @@
       (assoc-in [player :areas :discard] [])
       (assoc-in [player :reshuffled?] true)))
 
+(defn opponent
+  "Provide the opposing player."
+  [player]
+  (if (= :p1 player)
+    :p2
+    :p1))
+
 (defn draw-card
   "Draws `n` cards, and reshuffles the deck if needed."
   [game player n]

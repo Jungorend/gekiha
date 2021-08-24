@@ -50,7 +50,7 @@
   :plugins [[lein-codox "0.10.7"]]
   :codox {
           :metadata {:doc/format :markdown}
-          :source-uri "http://github.com/jungorend/gekiha/blob/{version}/{filepath}#L{line}"}
+          :source-uri "http://github.com/jungorend/gekiha/blob/v{version}/{filepath}#L{line}"}
 
   :profiles
   {:uberjar {:omit-source true

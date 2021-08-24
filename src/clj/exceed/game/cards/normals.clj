@@ -1,7 +1,8 @@
 (ns exceed.game.cards.normals
   (:require
     [clojure.spec.alpha :as spec]
-    [exceed.game.movement :refer [move get-space]]))
+    [exceed.game.movement :refer [move get-space]]
+    [exceed.game.utilities :as utility]))
 
 (defn non-neg-int?
   [value]
@@ -67,6 +68,15 @@
     })
 
 (defmacro make-ability
+    "This specifies card text and abilities.
+  All card's `:card-text` and `:boost-text` should be made of this.
+  You can pass an arbitrary number of state ability pairs. The `state` will
+  be the game-state that `ability` is called on. The code will have `game`
+  and `active-player` passed to them, so this can be freely referenced.
+  Whatever is returned will be the new game state.
+
+  Example:
+  ```(make-ability :after (move game active-player 3 :retreat))```"
   ([] {})
   ([state ability] `(hash-map ~state (fn [~'game ~'active-player] ~ability)))
   ([state ability & args] (if (seq (rest args))             ;; only one arg
@@ -75,8 +85,6 @@
                             nil)))
 
 (def normals
-  ;; state in boost is not always used but may be useful for future things
-  ;; will call all attacks and boosts each turn
   {:assault (make-attackcard
               "Assault"
               [:force 0] 5 4 [1 1] 0 0
@@ -132,8 +140,11 @@
               "Tech"
               false
               [:force 0]
-              (make-ability)                                ;; TODO: Implement Tech
-              )
+              (make-ability :placement (if-let [card (get-in game [:input-required :response])]
+                                         (-> (utility/remove-card game card [(utility/opponent active-player) :areas :boost])
+                                             (utility/add-card card [(utility/opponent active-player) :areas :discard]))
+                                         (assoc game :input-required {active-player [[:card [(utility/opponent active-player) :areas :boost]
+                                                                                      [:normal :dive :boost-text :placement]]]}))))
    })
 
 

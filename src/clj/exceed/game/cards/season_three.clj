@@ -17,7 +17,7 @@
     :ryu-hadoken (make-attackcard
                    "Hadoken"
                    [:force 0] 4 4 [3 6] 0 0
-                   (make-ability :reveal (if (get-in game [active-player :status :critical])
+                   (make-ability :placement (if (get-in game [active-player :status :critical])
                                            (update-in game [active-player :modifiers :speed] #(+ 2 %))
                                            game)
                                  :after (if (get-in game [active-player :status :hit])
