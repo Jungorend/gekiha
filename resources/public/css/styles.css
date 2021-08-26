@@ -107,3 +107,7 @@ ul {
 .player-2 {
   color: #000064;
 }
+
+.tooltip {
+  white-space: pre-line;
+}

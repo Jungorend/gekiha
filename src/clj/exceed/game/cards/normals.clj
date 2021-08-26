@@ -100,7 +100,7 @@
 
    :cross   (make-attackcard
               "Cross"
-              [:force 0] 6 3 [1 1] 0 0
+              [:force 0] 6 3 [1 2] 0 0
               (make-ability :after (move game active-player 3 :retreat))
               "Run"
               false
@@ -140,7 +140,7 @@
               "Tech"
               false
               [:force 0]
-              (make-ability :placement (if-let [card (get-in game [:input-required :response])]
+              (make-ability :placement (if-let [card (get-in game [:input-required :response])] ; TODO: Accommodate discarding your own boosts
                                          (-> (utility/remove-card game card [(utility/opponent active-player) :areas :boost])
                                              (utility/add-card card [(utility/opponent active-player) :areas :discard]))
                                          (assoc game :input-required {active-player [[:card [(utility/opponent active-player) :areas :boost]

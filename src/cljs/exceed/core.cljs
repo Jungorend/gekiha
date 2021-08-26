@@ -2,17 +2,12 @@
   (:require [reagent.core :as r]
             [reagent.dom :as dom]
             [re-frame.core :as rf]
+            [exceed.cards.core :as cards]
             [ajax.core :refer [GET POST]]))
 
 ;; TODO: Right now we're just assuming we're player 1 and there's no
 ;; separation of sessions. When multiple games are possible each game needs to be stored
 ;; by session ID
-
-(defn keyword->name
-  [key]
-  (case key
-    :ryu "Ryu"
-    :ken "Ken"))
 
 (rf/reg-event-db
   :init
@@ -50,13 +45,23 @@
   []
   (reduce #(conj %1 [:li %2]) [:ul] @(rf/subscribe [:history])))
 
+(defn render-card
+  "This produces a valid hiccup vector with all the card details
+  for the card specified by `key`. It will have the alt text of the description,
+  an optional `class` string to be added to the resulting class of card"
+  ([key] (render-card key ""))
+  ([key class]
+   [:p {:class (str "card " class)
+        :title (cards/key->description key :description)}
+    (cards/key->description key :name)]))
+
 (defn view-game-area
   []
   (reduce (fn [results card]
             (conj results (if (empty? card)
                             [:div.play-space>p ""]
-                            [:div.play-space (map #(vector :p {:class (if (= :p1 (first %)) "player-1" "player-2")}
-                                                             (keyword->name (second %))) card)])))
+                            [:div.play-space (map #(render-card (second %) (if (= :p1 (first %)) "player-1" "player-2"))
+                                                  card)])))
           [:div.play-area] @(rf/subscribe [:play-area])))
 
 (defn view-player-areas
@@ -66,11 +71,13 @@
         {:keys [hand draw gauge strike boost discard]} @(rf/subscribe [:player-cards player])]
     [:div.footer
      [:h3 "Gauge"]
-     [:div.gauge (map #(vector :p {:class (if (= :p1 player) "player-1" "player-2")} (str (nth % 3)))
-                      gauge)]
+     [:div.gauge (map #(render-card (nth % 3) (if (= :p1 player) "player-1" "player-2")) gauge)]
      [:div.draw-deck [:h3 (str "Player deck count: " draw)]]
-     [:div.hand [:h3 "Hand of cards"] (map #(vector :p {:class (if (= :p1 player) "player-1" "player-2")} (str (nth % 3)))
-                     hand)]
+     [:div.hand [:h3 "Hand of cards"] (map #(render-card (nth % 3)
+                                                         (if (= :p1 player)
+                                                           "player-1"
+                                                           "player-2"))
+                                           hand)]
      [:div.discard [:h3 (str "Discard: " (count discard))]]]))
 
 (defn get-gamestate []
