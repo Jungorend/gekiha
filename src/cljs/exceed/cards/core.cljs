@@ -43,20 +43,62 @@
           If you advanced past your opponent, their attacks do not hit you.
 
           Boost: Tech
-          Choose and discard a boost in play."]})
+          Choose and discard a boost in play."]
+   :spike ["Spike"
+           "Normal
+           Speed 3.
+           Power 5.
+           Range 2~3.
+           Guard 4.
+           Ignore Armor.
+           Ignore Guard.
+
+           Boost: Defend (+)
+           +1 Armor, +3 Guard."]
+   :sweep ["Sweep"
+           "Normal"
+           "Speed 2.
+           Power 6.
+           Range 1~3.
+           Guard 6.
+           Hit: The opponent must discard a card at random.
+
+           Boost: Light (+)
+           +2 Speed."]
+   :focus ["Focus"
+           "Normal
+           Speed 1.
+           Power 4.
+           Range 1~2.
+           Armor: 2.
+           Guard: 5.
+           Opponent Cannot Move you.
+           After: Draw a card.
+
+           Boost: Reading
+           Name a Normal Attack and then Strike. The Opponent must Strike with that card,
+           or reveal a hand without any."]
+   :block ["Block"
+           "Normal
+           Speed 0.
+           Power N/A.
+           Range N/A.
+           Armor 2.
+           Guard 3.
+           When you are hit, after hit effects, spend Force for +2 Armor per Force Spent.
+           After: Add this card to your Gauge at the end of the Strike.
+
+           Boost: Parry
+           Name a card. The opponent must discard a copy of that card, or reveal a hand without any."]})
 
 
 (defn key->description
-  "Returns the full name for a given key"
+  "Returns the name or description of the given card keyword.
+  :name for name, :description for description."
   [key type]
   (get-in (case key
-            :ryu s3/ryu
-            :ryu-hadoken s3/ryu
-            :ryu-donkey-kick s3/ryu
-            :grasp normals
-            :cross normals
-            :assault normals
-            :dive normals
+            :ryu s3/ryu :ryu-hadoken s3/ryu :ryu-donkey-kick s3/ryu :ryu-one-inch-punch s3/ryu :ryu-shoryuken s3/ryu :ryu-tatsu s3/ryu :ryu-metsu-hadoken s3/ryu :ryu-metsu-shoryuken s3/ryu
+            :grasp normals :cross normals :assault normals :dive normals :spike normals :sweep normals :focus normals :block normals
             ) [key (if (= type :name)
                                0
                                1)]))
