@@ -9,6 +9,10 @@
 ;; separation of sessions. When multiple games are possible each game needs to be stored
 ;; by session ID
 
+(defn key->str
+  [x]
+  (second (clojure.string/split (str x) #":")))
+
 (rf/reg-event-db
   :init
   (fn [_ _]
@@ -40,6 +44,10 @@
   (fn [db [_ player]]
     (get-in db [:game player :areas])))
 
+(rf/reg-sub
+  :input-required
+  (fn [db [_ player]]
+       (get-in db [:game :input-required player])))
 
 (defn view-history
   []
@@ -80,6 +88,21 @@
                                            hand)]
      [:div.discard [:h3 (str "Discard: " (count discard))]]]))
 
+(defn player-input-status
+  "If the game is waiting on the player for something, this reports what needs to be done."
+  []
+  (let [player @(rf/subscribe [:player])
+        input-required @(rf/subscribe [:input-required player])]
+    [:div.input-required
+     (when (seq input-required)
+       (map (fn [req]
+              [:h3 (case (first req)
+                     :card (str "Please select a card from your "
+                                (when-not (= (get-in req [1 0]) player) "opponent's ")
+                                (key->str (get-in req [1 2]))
+                                "."))])
+            input-required))]))
+
 (defn get-gamestate []
   (GET "/game-state"
        {:headers       {"Accept" "application/transit+json"}
@@ -101,6 +124,7 @@
       [view-history]]
      [:img#scroll-history-down.scroll-btn {:src "/img/arrow_circle_down_black_24dp.svg" :alt "scroll history down"}]]]
    [:div.game-container
+    [player-input-status]
     [view-game-area]]
    [view-player-areas]
    [:script {:type "text/javascript" :src "/js/app.js"}]])

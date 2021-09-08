@@ -157,7 +157,7 @@
           (remove-card chosen-boost [player :areas :hand])
           (add-card (assoc chosen-boost 1 :face-up) [player :areas :boost])
           (assoc ((:placement (:boost-text (get-card-info chosen-boost))) player) :input-required {}))
-      (assoc game :input-required {player [[:card [player :areas :hand]] ['exceed.game.core/core]]}))))
+      (assoc game :input-required {player [[:card [player :areas :hand] ['exceed.game.core/core]]]}))))
 
 (def game-list (atom (-> (exceed.game.core/setup-game :ryu :ryu :p1)
                          (assoc :history [[:p "Player boosted Backstep."] ;; this is just test code for now
