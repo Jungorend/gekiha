@@ -129,8 +129,9 @@
    [view-player-areas]
    [:script {:type "text/javascript" :src "/js/app.js"}]])
 
+
+
+;; Initialization
 (rf/dispatch-sync [:init])
-
 (dom/render game-outline (.getElementById js/document "main-container"))
-
 (get-gamestate)

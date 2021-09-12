@@ -1,7 +1,7 @@
 (ns exceed.game.core
-  (:require     [exceed.game.cards.normals]
-                [exceed.game.cards.season-three]
-                [exceed.game.utilities :refer [add-card remove-card draw-card reshuffle]]))
+  (:require [exceed.game.cards.lookup :refer [get-character-info get-card-info]]
+            [exceed.game.utilities :refer [add-card remove-card draw-card reshuffle]]
+            [exceed.game.state-machine :refer [process]]))
 
 ;; Notes for order of attacking
 ;; Reveal effects -> Calculate Speed -> Before Effects ->
@@ -15,30 +15,6 @@
 ;; states
 ;; placement, reveal, hit before after cleanup
 
-(defn get-card-info
-  "This takes in a card from an area and returns its details"
-  [character]
-  (let [c (case (nth character 2)
-            :ryu exceed.game.cards.season-three/ryu
-            :normal exceed.game.cards.normals/normals)]
-    ((nth character 3) (if (= :normal (nth character 2))
-                         c
-                         (:cards c)))))
-
-(defn get-character-info
-  [character]
-  (case character
-    :ryu exceed.game.cards.season-three/ryu
-    :normal exceed.game.cards.normals/normals))
-
-(defn create-deck
-  "This sets up the starting deck for each character.
-  Decks consist of 2 of every normal, as well as 2 of every special and ultra unique to the character."
-  [character player]
-  (shuffle (concat
-             (map #(vector player :face-down character %) (take 14 (cycle (keys (:cards (get-character-info character)))))) ;; fake card
-             (map #(vector player :face-down :normal %) (take 16 (cycle (keys exceed.game.cards.normals/normals)))))))
-
 (defn get-boosts
   "Returns a list of the boosts owned by player in whichever draw area."
   [player area]
@@ -47,50 +23,6 @@
        (map #(:boost-name ((nth % 3) (if (= :normal (nth % 2))
                                        (get-card-info (nth % 2))
                                        (:cards (get-card-info (nth % 2)))))))))
-
-(defn create-player
-  "Create initial player stats"
-  [character player first?]
-  (let [deck (create-deck character player)
-        draw-count (if first? 5 6)]
-    {:health 30
-     :character character
-     :exceeded? false
-     :reshuffled? false
-     :modifiers {
-                 :power 0
-                 :speed 0
-                 :range [0 0]
-                 :guard 0
-                 :armor 0}
-     :areas {
-             :strike []
-             :discard []
-             :draw (into [] (drop draw-count deck))
-             :hand (into [] (take draw-count deck))
-             :gauge []
-             :boost []}
-     :status {
-              :can-move true
-              :can-be-pushed true
-              :can-hit true
-              :hit false ;; Tracking if hit during a strike
-              :stunned false
-              :critical false}
-     }))
-
-(defn setup-game
-  "Creates initial game state. Inputs are characters and starting player"
-  [p1-character p2-character first-player]
-  (let [p1-first? (= :p1 first-player)]
-    {:history []
-     :play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
-     :next-player (if p1-first? :p2 :p1)
-     :current-player first-player
-     :input-required {}                                  ;; Which actions the players need to do, :p1 or :p2. Response is set as :response
-     :phase :mulligan
-     :p1 (create-player p1-character :p1 p1-first?)
-     :p2 (create-player p2-character :p2 (not p1-first?))}))
 
 (defn display-view
   "This converts the game that the server uses, for the view the player can see.
@@ -159,7 +91,10 @@
           (assoc ((:placement (:boost-text (get-card-info chosen-boost))) player) :input-required {}))
       (assoc game :input-required {player [[:card [player :areas :hand] ['exceed.game.core/core]]]}))))
 
-(def game-list (atom (-> (exceed.game.core/setup-game :ryu :ryu :p1)
+(def game-list (atom (-> (process {:phase [:initialize :start]
+                                   :p1-character :ryu
+                                   :p2-character :ryu
+                                   :first-player :p1})
                          (assoc :history [[:p "Player boosted Backstep."] ;; this is just test code for now
                                           [:p "Opponent initiated a strike."]
                                           [:hr] [:h3 {:class "strike"} "Strike!"]
