@@ -42,3 +42,10 @@
       (-> game
           (update-in [player :areas :hand] #(concat % (take n (get-in game [player :areas :draw]))))
           (update-in [player :areas :draw] #(drop n %))))))
+
+(defn pay-focus
+  [game player focus]
+  (-> (reduce (fn [m [location card]]
+                (remove-card m card location))
+              game focus)
+      (update-in [player :areas :discard] #(concat % (map #'second focus)))))

@@ -1,6 +1,6 @@
 (ns exceed.game.core
   (:require [exceed.game.cards.lookup :refer [get-character-info get-card-info]]
-            [exceed.game.utilities :refer [add-card remove-card draw-card reshuffle]]
+            [exceed.game.utilities :refer [add-card pay-focus remove-card draw-card reshuffle]]
             [exceed.game.state-machine :refer [process]]))
 
 ;; Notes for order of attacking
@@ -61,13 +61,6 @@
 (defn prepare-action
   [game]
   (draw-card game (:current-player game) 1))
-
-(defn pay-focus
-  [game player focus]
-  (-> (reduce (fn [m [location card]]
-                (remove-card m card location))
-              game focus)
-      (update-in [player :areas :discard] #(concat % (map #'second focus)))))
 
 (defn change-cards-action
   [game]

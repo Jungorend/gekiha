@@ -61,35 +61,48 @@
     (->
       (assoc game :input-required {player
                                    [:action [:move :boost :strike :prepare :exceed :change-cards]]})
-      (assoc :phase [:select-action :processing]))))           ;; TODO: Implement actions from cards
+      )))           ;; TODO: Implement actions from cards
+
+(defn complete-task
+  "Updates the game state to notify process when done."
+  [game]
+  (if (> 3 (count (:phase game)))
+    (assoc-in game [:phase 1] :complete)
+    (update game :phase #(apply vector (first %) (drop 2 %)))))
 
 (defn process
   "This function takes in a current game state, and based on any newly present information,
-  will potentially move it to another state."
+  will potentially move it to another state. `:processing` refers to waiting on information.
+  Any function that finished processing requested info should call `complete-task` to update
+  to the next state."
   [game]
   (let [phase-name (get-in game [:phase 0])
         phase-status (get-in game [:phase 1])]
-    (case phase-name
-      :initialize (-> (setup-game (:p1-character game)
-                                  (:p2-character game)
-                                  (:first-player game))
-                      (assoc :phase [:mulligan :start])
-                      (process))
-      :mulligan (case phase-status
-                  :start (-> game
-                             (assoc :phase [:mulligan :processing :p1])
-                             (assoc-in [:input-required (:current-player game)]
-                                       [:cards [[(:current-player game) :areas :hand]]]))
-                  :processing game
-                  :complete (if (= :p1 (get-in game [:phase 2]))
-                              (-> game
-                                  (assoc :phase [:mulligan :processing :p2])
-                                  (assoc :input-required {(:next-player game)
-                                                          [:cards [[(:next-player game) :areas :hand]]]}))
-                              (process (assoc game :phase [:select-action :start]))))
-      :select-action (case phase-status
-                       :start (select-action game)
-                       :processing game
-                       :complete (process (assoc game [:phase]
-                                                      [(get-in game [:input-required :response]) :start])))
-      )))
+    (if (= :processing phase-status)
+      game
+      (case phase-name
+        :initialize (-> (setup-game (:p1-character game)
+                                    (:p2-character game)
+                                    (:first-player game))
+                        (assoc :phase [:mulligan :start])
+                        (process))
+        :mulligan (case phase-status                        ;; TODO: Actually mulligan cards when input provided
+                    :start (-> game
+                               (assoc :phase [:mulligan :processing :opponent-mulligan])
+                               (assoc-in [:input-required (:current-player game)]
+                                         [:cards [[(:current-player game) :areas :hand]]]))
+                    :opponent-mulligan (-> game
+                                           (assoc :phase [:mulligan :processing :complete])
+                                           (assoc :input-required {(:next-player game)
+                                                                   [:cards [[(:next-player game) :areas :hand]]]}))
+                    :complete (process (assoc game :phase [:select-action :start])))
+        :select-action (case phase-status
+                         :start (select-action (assoc game :phase [:select-action :processing]))
+                         :complete (process (assoc game [:phase]
+                                                        [(get-in game [:input-required :response]) :start])))
+        :move-action (case phase-status
+                       :start (-> game
+                                  (assoc :phase [:move-action :processing :force-request])
+                                  (assoc-in :input-required {(:current-player game) [:force]}))
+                       :force-request nil)                  ;; TODO
+        ))))
