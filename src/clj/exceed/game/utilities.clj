@@ -56,3 +56,13 @@
                 (remove-card m card location))
               game focus)
       (update-in [player :areas :discard] #(concat % (map #'second focus)))))
+
+(defn set-input
+  "This sets up the current required input from a player."
+  [game player input]
+  (assoc game :input-required {player input}))
+
+(defn get-response
+  "This returns the response from a required input."
+  [game]
+  (get-in game [:input-required :response]))

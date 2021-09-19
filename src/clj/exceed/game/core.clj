@@ -84,7 +84,7 @@
           (assoc ((:placement (:boost-text (get-card-info chosen-boost))) player) :input-required {}))
       (assoc game :input-required {player [[:card [player :areas :hand] ['exceed.game.core/core]]]}))))
 
-(def game-list (atom (-> (process {:phase [:initialize :start]
+(def game-list (atom (-> (process {:phase {:action :initialize :status :start}
                                    :p1-character :ryu
                                    :p2-character :ryu
                                    :first-player :p1})

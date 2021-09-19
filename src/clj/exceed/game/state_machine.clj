@@ -1,5 +1,6 @@
 (ns exceed.game.state-machine
-  (:require [exceed.game.cards.lookup :refer [get-character-info get-force-value]]))
+  (:require [exceed.game.cards.lookup :refer [get-character-info get-force-value]]
+            [exceed.game.utilities :refer [set-input get-response]]))
 
 (defn create-deck
   "This sets up the starting deck for each character.
@@ -49,7 +50,7 @@
      :next-player (if p1-first? :p2 :p1)
      :current-player first-player
      :input-required {}                                  ;; Which actions the players need to do, :p1 or :p2. Response is set as :response
-     :phase [:initialize :complete]
+     :phase {:action :initialize :sub-action :complete}
      :p1 (create-player p1-character :p1 p1-first?)
      :p2 (create-player p2-character :p2 (not p1-first?))}))
 
@@ -64,51 +65,70 @@
       )))           ;; TODO: Implement actions from cards
 
 (defn complete-task
-  "Updates the game state to notify process when done."
+  "Updates the game state to notify process when done. Will then call process
+  and return the next state of the game."
   [game]
-  (if (> 3 (count (:phase game)))
-    (assoc-in game [:phase 1] :complete)
-    (update game :phase #(apply vector (first %) (drop 2 %)))))
+  (assoc game :phase
+              {:action (get-in game [:phase :action])
+               :status (if (contains? (:phase game) :next-action)
+                             (get-in game [:phase :next-action])
+                             :complete)}))
+(defn get-phase-status
+  "Returns the status for the current phase."
+  [game]
+  (get-in game [:phase :status]))
+
+(defn set-phase
+  "Sets the phase to the requested parameters."
+  ([game action status] (assoc game :phase {:action action :status status :next-action :complete}))
+  ([game action status next-action] (assoc game :phase {:action action :status status :next-action next-action})))
+
+(defmulti proc
+  "This function takes in a current game state, and based on any newly present information,
+  will move it to the next state. If the :status of the phase is `:processing` it is waiting
+  on information and will not proceed. Any function that finished processing requested info should call
+  `complete-task` to update this function."
+          #(get-in % [:phase :action]))
 
 (defn process
-  "This function takes in a current game state, and based on any newly present information,
-  will potentially move it to another state. `:processing` refers to waiting on information.
-  Any function that finished processing requested info should call `complete-task` to update
-  to the next state."
   [game]
-  (let [phase-name (get-in game [:phase 0])
-        phase-status (get-in game [:phase 1])]
-    (if (= :processing phase-status)
-      game
-      (case phase-name
-        :initialize (-> (setup-game (:p1-character game)
-                                    (:p2-character game)
-                                    (:first-player game))
-                        (assoc :phase [:mulligan :start])
-                        (process))
-        :mulligan (case phase-status                        ;; TODO: Actually mulligan cards when input provided
-                    :start (-> game
-                               (assoc :phase [:mulligan :processing :opponent-mulligan])
-                               (assoc-in [:input-required (:current-player game)]
-                                         [:cards [[(:current-player game) :areas :hand]]]))
-                    :opponent-mulligan (-> game
-                                           (assoc :phase [:mulligan :processing :complete])
-                                           (assoc :input-required {(:next-player game)
-                                                                   [:cards [[(:next-player game) :areas :hand]]]}))
-                    :complete (process (assoc game :phase [:select-action :start])))
-        :select-action (case phase-status
-                         :start (select-action (assoc game :phase [:select-action :processing]))
-                         :complete (process (assoc game [:phase]
-                                                        [(get-in game [:input-required :response]) :start])))
-        :move-action (case phase-status
-                       :start (-> game
-                                  (assoc :phase [:move-action :processing :force-request])
-                                  (assoc :input-required {(:current-player game) [:force]}))
-                       :force-request (let [force-values (get-force-value (get-in game [:input-required :response]) :with-areas true)]
-                                        (-> game
-                                            (assoc :phase [:move-action :processing :move-request])
-                                            (assoc :input-required {(:current-player game)
-                                                                       [:move [(:current-player game)
-                                                                               (get-in game [(:current-player game) :character])]
-                                                                        [(- (second force-values)) (- (first force-values)) (first force-values) (second force-values)]]})))) ;; TODO: Add completion
-        ))))
+  (if (= :processing (get-phase-status game))
+    game
+    (proc game)))
+
+(defmethod proc :initialize [game]
+  (-> (setup-game (:p1-character game)
+                  (:p2-character game)
+                  (:first-player game))
+      (set-phase :mulligan :start)
+      (process)))
+
+(defmethod proc :mulligan [game]
+  (case (get-phase-status game)
+    :start (-> (set-phase game :mulligan :processing :opponent-mulligan)
+               (set-input (:current-player game)
+                          [:cards [[(:current-player game) :areas :hand]]]))
+    :opponent-mulligan (-> (set-phase game :mulligan :processing)
+                           (set-input (:next-player game)
+                                      [:cards [[(:next-player game) :areas :hand]]]))
+    :complete (process (set-phase game :select-action :start))))
+
+(defmethod proc :select-action [game]
+  (case (get-phase-status game)
+    :start (select-action (set-phase game :select-action :processing))
+    :complete (process (set-phase game (get-response game) :start))))
+
+(defmethod proc :move-action [game]
+  (case (get-phase-status game)
+    :start (-> (set-phase game :move-action :processing :force-request)
+               (set-input (:current-player game) [:force]))
+    :force-request (let [[min-force max-force] (get-force-value (get-response game) :with-areas true)]
+                     (-> (set-phase game :move-action :processing :move-request)
+                         (set-input (:current-player game)
+                                    [:move [(:current-player game)
+                                            (get-in game [(:current-player game) :character])]
+                                     [(- max-force) (- min-force) min-force max-force]])))
+    :move-request game)) ;; TODO: Complete function
+
+(defmethod proc :default [game]
+  game)
