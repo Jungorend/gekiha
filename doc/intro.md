@@ -14,3 +14,5 @@ Currently, for change cards action, the format to be returned should be:
 [force-amount, spent-cards]
 where force-amount is how much it is worth, and spent-cards is a collection of lists of the form [location card]
 so that the corresponding cards can be removed
+
+[:force] should return `[[card location] [card location]]`

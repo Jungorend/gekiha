@@ -10,8 +10,20 @@
 
 (defn get-card-info
   "This takes in a card from an area and returns its details"
-  [character]
-  (let [c (get-character-info (nth character 2))]
-    ((nth character 3) (if (= :normal (nth character 2))
+  [card]
+  (let [c (get-character-info (nth card 2))]
+    ((nth card 3) (if (= :normal (nth card 2))
                          c
                          (:cards c)))))
+
+(defn get-force-value
+  "Provides the the focus values like [min-value max-value]. Specials count as 1, and Ultras count as 2.
+  If the optional key `with-areas` is set to true, then it will disregard every other field."
+  [cards & {:keys [with-areas]}]
+  (let [c (if with-areas (map first cards) cards)
+        ultra-count (count (filter
+                             (fn [card] (= :gauge
+                                           (first (:cost (get-card-info card)))))
+                             c))
+        special-count (- (count c) ultra-count)]
+    [(count c) (+ special-count (* 2 ultra-count))]))

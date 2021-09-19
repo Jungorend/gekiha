@@ -124,7 +124,7 @@
       [view-history]]
      [:img#scroll-history-down.scroll-btn {:src "/img/arrow_circle_down_black_24dp.svg" :alt "scroll history down"}]]]
    [:div.game-container
-    [player-input-status]
+    #_[player-input-status]
     [view-game-area]]
    [view-player-areas]
    [:script {:type "text/javascript" :src "/js/app.js"}]])

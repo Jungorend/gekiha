@@ -13,6 +13,13 @@
   [game card area]
   (assoc-in game area (conj (get-in game area) card)))
 
+(defn move-card
+  "Moves a card from the old area to the new area."
+  [game card old-area new-area]
+  (-> game
+      (remove-card card old-area)
+      (add-card card new-area)))
+
 (defn reshuffle
   "Reshuffles the discard pile into the draw pile."
   [game player]

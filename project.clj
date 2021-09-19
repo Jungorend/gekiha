@@ -7,6 +7,7 @@
                  [cheshire "5.10.0"]
                  [clojure.java-time "0.3.2"]
                  [com.h2database/h2 "1.4.200"]
+                 [com.rpl/specter "1.1.3"]
                  [conman "0.9.1"]
                  [cprop "0.1.17"]
                  [day8.re-frame/re-frame-10x "1.1.13"]

@@ -1,5 +1,5 @@
 (ns exceed.game.state-machine
-  (:require [exceed.game.cards.lookup :refer [get-character-info]]))
+  (:require [exceed.game.cards.lookup :refer [get-character-info get-force-value]]))
 
 (defn create-deck
   "This sets up the starting deck for each character.
@@ -103,6 +103,12 @@
         :move-action (case phase-status
                        :start (-> game
                                   (assoc :phase [:move-action :processing :force-request])
-                                  (assoc-in :input-required {(:current-player game) [:force]}))
-                       :force-request nil)                  ;; TODO
+                                  (assoc :input-required {(:current-player game) [:force]}))
+                       :force-request (let [force-values (get-force-value (get-in game [:input-required :response]) :with-areas true)]
+                                        (-> game
+                                            (assoc :phase [:move-action :processing :move-request])
+                                            (assoc :input-required {(:current-player game)
+                                                                       [:move [(:current-player game)
+                                                                               (get-in game [(:current-player game) :character])]
+                                                                        [(- (second force-values)) (- (first force-values)) (first force-values) (second force-values)]]})))) ;; TODO: Add completion
         ))))
