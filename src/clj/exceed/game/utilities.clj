@@ -59,8 +59,8 @@
 
 (defn set-input
   "This sets up the current required input from a player."
-  [game player input]
-  (assoc game :input-required {player input}))
+  [game input]
+  (assoc game :input-required input))
 
 (defn get-response
   "This returns the response from a required input."

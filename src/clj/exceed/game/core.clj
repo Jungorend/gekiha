@@ -1,6 +1,6 @@
 (ns exceed.game.core
   (:require [exceed.game.cards.lookup :refer [get-character-info get-card-info]]
-            [exceed.game.utilities :refer [add-card pay-focus remove-card draw-card reshuffle]]
+            [exceed.game.utilities :refer [add-card pay-focus remove-card draw-card reshuffle get-response]]
             [exceed.game.state-machine :refer [process]]))
 
 ;; Notes for order of attacking
@@ -58,17 +58,6 @@
      game-with-response player)))
 
 ;; Game engine functionality
-(defn prepare-action
-  [game]
-  (draw-card game (:current-player game) 1))
-
-(defn change-cards-action
-  [game]
-  (let [changed-cards (get-in game [:input-required :response])
-        player (:current-player game)]
-    (if changed-cards
-      (-> (pay-focus game player changed-cards)
-          (draw-card player (count changed-cards))))))      ;; TODO: have ultras count for 2 force optionally
 
 (defn play-boost
   ;; TODO: Implement removing boosts that are not continuous

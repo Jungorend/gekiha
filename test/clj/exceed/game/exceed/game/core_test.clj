@@ -28,7 +28,7 @@
       (is (= [[:p1 :ryu]] (confirm-space ((get-in normals [:assault :boost-text :placement]) cant-move-set :p1) 2))))))
 
 (deftest move-action
-  (let [start (process (set-phase @game-list :move-action :start))
+  (let [start (process (set-phase @game-list :move :start))
         force-request (-> start
                           (assoc :input-required {:response
                                                   (mapv #(vector %1 [:p1 :areas :hand]) (take 2 (get-in start [:p1 :areas :hand])))})

@@ -1,6 +1,6 @@
 (ns exceed.game.state-machine
   (:require [exceed.game.cards.lookup :refer [get-character-info get-force-value]]
-            [exceed.game.utilities :refer [set-input get-response]]))
+            [exceed.game.utilities :refer [set-input get-response opponent draw-card move-card]]))
 
 (defn create-deck
   "This sets up the starting deck for each character.
@@ -49,6 +49,7 @@
      :play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
      :next-player (if p1-first? :p2 :p1)
      :current-player first-player
+     :strike-occurred? false
      :input-required {}                                  ;; Which actions the players need to do, :p1 or :p2. Response is set as :response
      :phase {:action :initialize :sub-action :complete}
      :p1 (create-player p1-character :p1 p1-first?)
@@ -106,11 +107,13 @@
 (defmethod proc :mulligan [game]
   (case (get-phase-status game)
     :start (-> (set-phase game :mulligan :processing :opponent-mulligan)
-               (set-input (:current-player game)
-                          [:cards [[(:current-player game) :areas :hand]]]))
+               (set-input {:player (:current-player game)
+                           :request-type :cards
+                           :destinations [(:current-player game) :areas :hand]}))
     :opponent-mulligan (-> (set-phase game :mulligan :processing)
-                           (set-input (:next-player game)
-                                      [:cards [[(:next-player game) :areas :hand]]]))
+                           (set-input {:player (:next-player game)
+                                       :request-type :cards
+                                       :destinations [[(:next-player game) :areas :hand]]}))
     :complete (process (set-phase game :select-action :start))))
 
 (defmethod proc :select-action [game]
@@ -118,17 +121,51 @@
     :start (select-action (set-phase game :select-action :processing))
     :complete (process (set-phase game (get-response game) :start))))
 
-(defmethod proc :move-action [game]
+(defmethod proc :move [game]
   (case (get-phase-status game)
-    :start (-> (set-phase game :move-action :processing :force-request)
-               (set-input (:current-player game) [:force]))
+    :start (-> (set-phase game :move :processing :force-request)
+               (set-input {:player (:current-player game)
+                           :request-type :force}))
     :force-request (let [[min-force max-force] (get-force-value (get-response game) :with-areas true)]
-                     (-> (set-phase game :move-action :processing :move-request)
-                         (set-input (:current-player game)
-                                    [:move [(:current-player game)
-                                            (get-in game [(:current-player game) :character])]
-                                     [(- max-force) (- min-force) min-force max-force]])))
+                     (-> (set-phase game :move :processing :move-request)
+                         (set-input {:player       (:current-player game)
+                                     :request-type :move
+                                     :target       [(:current-player game) (get-in game [(:current-player game) :character])]
+                                     :range        [(- max-force) (- min-force) min-force max-force]})))
     :move-request game)) ;; TODO: Complete function
 
-(defmethod proc :default [game]
-  game)
+(defmethod proc :change-cards [game]
+  (case (get-phase-status game)
+    :start (-> (set-phase game :change-cards :processing :force-request)
+               (set-input {:player (:current-player game)
+                           :request-type :force}))
+    :force-request (let [[min-force max-force] (get-force-value (get-response game) :with-areas true)]
+                     (-> (reduce #(move-card %1 (first %2) (second %2) [(:current-player game) :areas :hand])
+                                 game (get-response game))
+                         (set-phase :change-cards :processing :complete)
+                         (set-input {:player (:current-player game)
+                                     :request-type :number
+                                     :range [min-force max-force]})))
+    :complete (-> (set-phase game :end-of-turn :start)
+                  (draw-card (:current-player game) (get-response game)))))
+
+(defmethod proc :prepare [game]
+  (-> (set-phase game :end-of-turn :start)
+      (draw-card (:current-player) 1)))
+
+(defmethod proc :end-of-turn [game]
+  (case (get-phase-status game)
+    :start (let [updated-player (assoc game :current-player (opponent (:current-player game))
+                                            :next-player (:current-player game))
+                 with-draw (draw-card updated-player (:current-player game) 1)]
+             (if (:strike-occurred? game)
+               (process (set-phase updated-player :select-action :start))
+               (if (> 7 (count (get-in game [(:current-player game) :areas :hand])))
+                 (-> (set-phase with-draw :end-of-turn :processing :discards)
+                     (set-input {:player (:current-player game)
+                                 :request-type :discard}))
+                 (process (set-phase game :select-action :start)))))
+    :discards (-> (reduce #(move-card %1 (first %2) (second %2) [(:next-player game) :areas :discard])
+                          game (get-response game))
+                  (set-phase :select-action :start)
+                  (process))))
