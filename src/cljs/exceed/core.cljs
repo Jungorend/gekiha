@@ -21,8 +21,17 @@
 (rf/reg-event-db
   :set-gamestate
   (fn [db [_ gamestate]]
-    ;; TODO: Remove forced :p1 when users added
     (assoc db :game gamestate)))
+
+(rf/reg-event-db
+  :add-selected
+  (fn [db [_ card]]
+    (update db :selected #(conj % card))))
+
+(rf/reg-sub
+  :selected
+  (fn [db _]
+    (get db :selected)))
 
 (rf/reg-sub
   :history
@@ -47,7 +56,14 @@
 (rf/reg-sub
   :input-required
   (fn [db [_ player]]
-       (get-in db [:game :input-required player])))
+       (get-in db [:game :input-required])))
+
+(rf/reg-sub
+  :is-selected?
+  (fn [_ [_ card]]
+    (if (seq (filter #(= % card) @(rf/subscribe [:selected])))
+      " selected"
+      "")))
 
 (defn view-history
   []
@@ -55,21 +71,27 @@
 
 (defn render-card
   "This produces a valid hiccup vector with all the card details
-  for the card specified by `key`. It will have the alt text of the description,
-  an optional `class` string to be added to the resulting class of card"
-  ([key] (render-card key ""))
-  ([key class]
-   [:p {:class (str "card " class)
-        :title (cards/key->description key :description)}
-    (cards/key->description key :name)]))
+  for the card. It will have the alt text of the description,
+  and notifies `item-selected` if clicked."
+  [card]
+  (let [attack-card? (or (= :face-down (second (:card card)))
+                         (= :face-up (second (:card card))))
+        selected? @(rf/subscribe [:is-selected? card])]
+    [:p {:class    (str "card"
+                        (if (= :p1 (first (:card card))) " player-one" " player-two")
+                        selected?)
+         :title    (cards/key->description (if attack-card? (nth (:card card) 3) (nth (:card card) 1)) :description)
+         :on-click #(rf/dispatch [:add-selected card])}
+     (cards/key->description (if attack-card? (nth (:card card) 3) (nth (:card card) 1)) :name)]))
 
 (defn view-game-area
   []
   (reduce (fn [results card]
             (conj results (if (empty? card)
                             [:div.play-space>p ""]
-                            [:div.play-space (map #(render-card (second %) (if (= :p1 (first %)) "player-1" "player-2"))
-                                                  card)])))
+                            [:div.play-space (doall (map #(render-card {:location [:play-area (count results)]
+                                                                        :card     %})
+                                                         card))])))
           [:div.play-area] @(rf/subscribe [:play-area])))
 
 (defn view-player-areas
@@ -79,13 +101,11 @@
         {:keys [hand draw gauge strike boost discard]} @(rf/subscribe [:player-cards player])]
     [:div.footer
      [:h3 "Gauge"]
-     [:div.gauge (map #(render-card (nth % 3) (if (= :p1 player) "player-1" "player-2")) gauge)]
+     [:div.gauge (map #(render-card {:location [player :areas :gauge] :card %}) gauge)]
      [:div.draw-deck [:h3 (str "Player deck count: " draw)]]
-     [:div.hand [:h3 "Hand of cards"] (map #(render-card (nth % 3)
-                                                         (if (= :p1 player)
-                                                           "player-1"
-                                                           "player-2"))
-                                           hand)]
+     [:div.hand [:h3 "Hand of cards"] (doall (map #(render-card {:location [player :areas :hand]
+                                                                 :card     %})
+                                                  hand))]
      [:div.discard [:h3 (str "Discard: " (count discard))]]]))
 
 (defn player-input-status
@@ -95,13 +115,11 @@
         input-required @(rf/subscribe [:input-required player])]
     [:div.input-required
      (when (seq input-required)
-       (map (fn [req]
-              [:h3 (case (first req)
-                     :card (str "Please select a card from your "
-                                (when-not (= (get-in req [1 0]) player) "opponent's ")
-                                (key->str (get-in req [1 2]))
-                                "."))])
-            input-required))]))
+       [:h3
+        (case (:request-type input-required)
+          :cards (str "You need to select cards from "
+                      (:destinations input-required)
+                      "."))])]))
 
 (defn get-gamestate []
   (GET "/game-state"
@@ -124,7 +142,7 @@
       [view-history]]
      [:img#scroll-history-down.scroll-btn {:src "/img/arrow_circle_down_black_24dp.svg" :alt "scroll history down"}]]]
    [:div.game-container
-    #_[player-input-status]
+    [player-input-status]
     [view-game-area]]
    [view-player-areas]
    [:script {:type "text/javascript" :src "/js/app.js"}]])

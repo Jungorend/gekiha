@@ -108,6 +108,10 @@ ul {
   color: #000064;
 }
 
+.selected {
+  background-color: #aa0000;
+}
+
 .tooltip {
   white-space: pre-line;
 }

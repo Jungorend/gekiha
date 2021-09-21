@@ -35,6 +35,6 @@
                           (complete-task)
                           (process))]
     (testing "Confirm that the move action requests the player picks cards to spend on focus"
-      (is (= {:p1 [:force]} (:input-required start))))
+      (is (= {:player :p1 :request-type :force} (:input-required start))))
     (testing "Confirm that force value calculates correctly."
-      (is (= {:p1 [:move [:p1 :ryu] [-2 -2 2 2]]} (:input-required force-request))))))
+      (is (= {:player :p1 :request-type :move :target [:p1 :ryu] :range [-2 -2 2 2]} (:input-required force-request))))))

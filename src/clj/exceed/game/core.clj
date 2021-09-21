@@ -43,8 +43,8 @@
                                                                    [(first %) :face-down]
                                                                    %) boosts)))
         (update :input-required (fn [input]
-                                  (if (get input player)
-                                    {player (player input)}
+                                  (if (= player (:player input))
+                                    input
                                     {})))
         (update-in [player :areas :draw] #(count %)))))
 
