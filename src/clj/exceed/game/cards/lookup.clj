@@ -8,6 +8,21 @@
     :ryu exceed.game.cards.season-three/ryu
     :normal exceed.game.cards.normals/normals))
 
+(defn call-card-function
+  "This takes a vector, func, of form
+  [`ns` `character` `function` `phase`] and calls it.
+  For example [:normal :assault :boost-text :placement].
+
+  This function is useful for calling on input-responses as it will find the appropriate source
+  if there is a requester."
+  [game]
+  (let [request (get-in game [:input-required :requester])
+        c (get-character-info (first request))
+        character (if (= :normal (first request))
+                    c
+                    (:cards c))]
+    ((get-in character (drop 1 request)) game (get-in game [:input-required :player]))))
+
 (defn get-card-info
   "This takes in a card from an area and returns its details"
   [card]

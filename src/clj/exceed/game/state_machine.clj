@@ -50,7 +50,7 @@
      :next-player (if p1-first? :p2 :p1)
      :current-player first-player
      :strike-occurred? false
-     :input-required {}                                  ;; Which actions the players need to do, :p1 or :p2. Response is set as :response
+     :input-required {}
      :phase {:action :initialize :sub-action :complete}
      :p1 (create-player p1-character :p1 p1-first?)
      :p2 (create-player p2-character :p2 (not p1-first?))}))
@@ -60,20 +60,10 @@
   Updates :input-required to request from the player."
   [game]
   (let [player (:current-player game)]
-    (->
-      (assoc game :input-required {player
-                                   [:action [:move :boost :strike :prepare :exceed :change-cards]]})
-      )))           ;; TODO: Implement actions from cards
+    (set-input game {:player player
+                     :request-type :action
+                     :options [:move :boost :strike :prepare :exceed :change-cards]})))           ;; TODO: Implement actions from cards
 
-(defn complete-task
-  "Updates the game state to notify process when done. Will then call process
-  and return the next state of the game."
-  [game]
-  (assoc game :phase
-              {:action (get-in game [:phase :action])
-               :status (if (contains? (:phase game) :next-action)
-                             (get-in game [:phase :next-action])
-                             :complete)}))
 (defn get-phase-status
   "Returns the status for the current phase."
   [game]
@@ -91,7 +81,7 @@
   `complete-task` to update this function."
           #(get-in % [:phase :action]))
 
-(defn process
+(defn process                                               ;; TODO: Need to ensure cards are processed such that they return to the original state
   [game]
   (if (= :processing (get-phase-status game))
     game
@@ -151,7 +141,8 @@
 
 (defmethod proc :prepare [game]
   (-> (set-phase game :end-of-turn :start)
-      (draw-card (:current-player) 1)))
+      (draw-card (:current-player game) 1)
+      (process)))
 
 (defmethod proc :end-of-turn [game]
   (case (get-phase-status game)
@@ -169,3 +160,13 @@
                           game (get-response game))
                   (set-phase :select-action :start)
                   (process))))
+
+(defn complete-task
+  "Updates the game state to notify process when done. Will then call process
+  and return the next state of the game."
+  [game]
+  (process (assoc game :phase
+                       {:action (get-in game [:phase :action])
+                        :status (if (contains? (:phase game) :next-action)
+                                  (get-in game [:phase :next-action])
+                                  :complete)})))

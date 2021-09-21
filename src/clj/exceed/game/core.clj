@@ -1,7 +1,7 @@
 (ns exceed.game.core
-  (:require [exceed.game.cards.lookup :refer [get-character-info get-card-info]]
-            [exceed.game.utilities :refer [add-card pay-focus remove-card draw-card reshuffle get-response]]
-            [exceed.game.state-machine :refer [process]]))
+  (:require [exceed.game.cards.lookup :refer [get-character-info get-card-info call-card-function]]
+            [exceed.game.utilities :refer [get-input add-card pay-focus remove-card draw-card reshuffle get-response]]
+            [exceed.game.state-machine :refer [process complete-task]]))
 
 ;; Notes for order of attacking
 ;; Reveal effects -> Calculate Speed -> Before Effects ->
@@ -48,14 +48,26 @@
                                     {})))
         (update-in [player :areas :draw] #(count %)))))
 
-(defn send-response
-  "Provides a response to a function's request for player input."
+(defn valid-response?
+  "This takes in a `player` and confirms the right player is updating the game.
+  It also checks to make sure that the response is valid for the data requested. This involves
+  ensuring the files can be found in the appropriate locations and there are the correct number."
   [game player response]
-  (let [function-reference (get-in game [:input-required player 1])
-        game-with-response (assoc-in (dissoc game :input-required) [:input-required :response] response)]
-    ((get-in (get-character-info (first function-reference))
-             (vec (rest function-reference)))
-     game-with-response player)))
+  (let [request (get-input game)]
+    (if (not= player (:player request))
+      false
+      true)))                                               ;; TODO: Implement full validation. Right now just confirms right player
+
+(defn update-gamestate
+  "When a response is provided from a player, this function can be called and it will validate the response.
+  If the response matches the required request, it will send the response to the appropriate card function
+  or state machine and update state."
+  [game player response]
+  (if (not (valid-response? game player response))
+    game
+    (if (contains? (get-input game) :requester)
+      (complete-task (call-card-function (assoc-in game [:input-required :response] response)))
+      (complete-task (assoc-in game [:input-required :response] response)))))
 
 ;; Game engine functionality
 

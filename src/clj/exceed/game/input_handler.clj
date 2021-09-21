@@ -13,6 +13,7 @@
 (spec/def ::request-type keyword?)
 (spec/def ::quantity non-neg-int?)
 (spec/def ::range (spec/coll-of int? :kind vector? :max-count 2 :min-count 1))
+(spec/def ::options (spec/coll-of keyword? :kind vector?))
 (spec/def ::player player?)
 (spec/def ::requester (spec/coll-of keyword? :kind vector?))
 
@@ -23,6 +24,11 @@
              ::player
              ::destinations]
     :opt-un [::requester]))
+
+(defmethod request-type :action [_]
+  (spec/keys
+    :req-un [::player
+             ::options]))
 
 (defmethod request-type :number [_]
   (spec/keys

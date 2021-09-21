@@ -62,6 +62,10 @@
   [game input]
   (assoc game :input-required input))
 
+(defn get-input
+  [game]
+  (:input-required game))
+
 (defn get-response
   "This returns the response from a required input."
   [game]
