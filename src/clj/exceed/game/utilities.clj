@@ -42,7 +42,7 @@
   (let [deck-size (count (get-in game [player :areas :draw]))]
     (if (> n deck-size)
       (if (get-in game [player :reshuffled?])
-        (assoc game :phase (if (= player :p1) :p2-win :p1-win))
+        (assoc game :phase (if (= player :p1) {:action :p2-win} {:action :p1-win}))
         (-> (draw-card game player deck-size)
             (reshuffle player)
             (recur player (- n deck-size))))

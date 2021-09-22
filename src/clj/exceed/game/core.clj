@@ -15,15 +15,6 @@
 ;; states
 ;; placement, reveal, hit before after cleanup
 
-(defn get-boosts
-  "Returns a list of the boosts owned by player in whichever draw area."
-  [player area]
-  (->> area
-       (filter #(or (= player (first %)) (= :face-up (second %)) (= :face-down (second %))))
-       (map #(:boost-name ((nth % 3) (if (= :normal (nth % 2))
-                                       (get-card-info (nth % 2))
-                                       (:cards (get-card-info (nth % 2)))))))))
-
 (defn display-view
   "This converts the game that the server uses, for the view the player can see.
   As a result all hidden decks are replaced with the number of cards remaining, and
@@ -35,12 +26,14 @@
         (update-in [other-player :areas :hand] #(count %))
         (update-in [other-player :areas :draw] #(count %))
         (update-in [other-player :areas :boost] (fn [boosts] (map
-                                                               #(if (= :face-down (second %))
-                                                                  [(first %) :face-down]
+                                                               #(if (= :face-down (:facing %))
+                                                                  {:player (:player %)
+                                                                   :facing :face-down}
                                                                   %) boosts)))
         (update-in [other-player :areas :strike] (fn [boosts] (map
-                                                                #(if (= :face-down (second %))
-                                                                   [(first %) :face-down]
+                                                                #(if (= :face-down (:facing %))
+                                                                   {:player (:player %)
+                                                                    :facing :face-down}
                                                                    %) boosts)))
         (update :input-required (fn [input]
                                   (if (= player (:player input))
@@ -71,7 +64,7 @@
 
 ;; Game engine functionality
 
-(defn play-boost
+#_(defn play-boost
   ;; TODO: Implement removing boosts that are not continuous
   "Provides cards in hand and based on which one players wants,
   puts it in the boost area and calls its placement effects.

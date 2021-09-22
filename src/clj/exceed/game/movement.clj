@@ -5,6 +5,15 @@
 ;; or strikes. The primary functions to use are get-space to locate the space of an object
 ;; and move, which moves a piece to a new location
 
+(defn make-character-card
+  "This creates the format characters use for purpose of moving and identifying them."
+  [game player]
+  (let [name (get-in game [:p1 :character])]
+    {:player player
+     :type   :character
+     :deck name
+     :name name}))
+
 (defn get-space
   "Takes `item` and returns which space it is in, or nil if it doesn't exist.
   `item` is of format [player card]"
@@ -16,8 +25,8 @@
 (defn get-range
   "Returns the two characters ranges from each other"
   [game]
-  (let [p1-space (get-space [:p1 (get-in game [:p1 :character])] (:play-area game))
-        p2-space (get-space [:p2 (get-in game [:p2 :character])] (:play-area game))]
+  (let [p1-space (get-space (make-character-card game :p1) (:play-area game))
+        p2-space (get-space (make-character-card game :p2) (:play-area game))]
     (if (> p1-space p2-space)
       (- p1-space p2-space)
       (- p2-space p1-space))))
@@ -45,14 +54,14 @@
   `type` refers to whether this is an advance, retreat, close, or move.
   Negative movement is not taken into account. To ensure no issues, only pass in positive values."
   [game player move-value type]
-  (let [p1-space (get-space [:p1 (get-in game [:p1 :character])] (:play-area game))
-        p2-space (get-space [:p2 (get-in game [:p2 :character])] (:play-area game))
+  (let [p1-space (get-space (make-character-card game :p1) (:play-area game))
+        p2-space (get-space (make-character-card game :p2) (:play-area game))
         old-space (if (= player :p1) p1-space p2-space)
         opponent (if (= player :p1) :p2 :p1)
         opponent-space (if (= player :p1) p2-space p1-space)
         player-facing (if (> old-space opponent-space) -1 1) ;; -1 player is on right, 1 player is on left
         distance (get-range game)
-        move-character (partial move-card game [player (get-in game [player :character])] old-space)]
+        move-character (partial move-card game (make-character-card game player) old-space)]
      (if (can-move? game player type)
        (case type
          :retreat (move-character (if (= 1 player-facing)

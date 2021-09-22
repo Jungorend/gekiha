@@ -24,12 +24,12 @@
     ((get-in character (drop 1 request)) game (get-in game [:input-required :player]))))
 
 (defn get-card-info
-  "This takes in a card from an area and returns its details"
+  "This takes in a card from an area and returns its details."
   [card]
-  (let [c (get-character-info (nth card 2))]
-    ((nth card 3) (if (= :normal (nth card 2))
-                         c
-                         (:cards c)))))
+  (let [c (get-character-info (:deck card))]
+    (get (:name c) [(if (= :normal (:type card))
+                      c
+                      (:cards c))])))
 
 (defn get-force-value
   "Provides the the focus values like [min-value max-value]. Specials count as 1, and Ultras count as 2.

@@ -3,12 +3,21 @@
             [exceed.game.utilities :refer [set-input get-response opponent draw-card move-card]]))
 
 (defn create-deck
-  "This sets up the starting deck for each character.
-  Decks consist of 2 of every normal, as well as 2 of every special and ultra unique to the character."
+  "This sets up the starting deck for ech character.
+  Decks consist of 2 of every normal, special, and ultra. The normals are the same for all characters."
   [character player]
-  (shuffle (concat
-             (map #(vector player :face-down character %) (take 14 (cycle (keys (:cards (get-character-info character)))))) ;; fake card
-             (map #(vector player :face-down :normal %) (take 16 (cycle (keys exceed.game.cards.normals/normals)))))))
+  (let [c (:cards (get-character-info character))]
+    (shuffle (concat
+               (map #(hash-map :player player
+                               :facing :face-down
+                               :type :normal
+                               :deck character
+                               :name %) (take 16 (cycle (keys exceed.game.cards.normals/normals))))
+               (map #(hash-map :player player
+                               :facing :face-down
+                               :deck character
+                               :type (if (= :force (get-in c [% :cost 0])) :special :ultra)
+                               :name %) (take 16 (cycle (keys c))))))))
 
 (defn create-player
   "Create initial player stats"
@@ -46,7 +55,8 @@
   [p1-character p2-character first-player]
   (let [p1-first? (= :p1 first-player)]
     {:history []
-     :play-area [[] [] [[:p1 p1-character]] [] [] [] [[:p2 p2-character]] [] []]
+     :play-area [[] [] [{:player :p1, :type :character, :deck p1-character, :name p1-character}] [] [] []
+                 [{:player :p2 :type :character :deck p2-character :name p2-character}] [] []]
      :next-player (if p1-first? :p2 :p1)
      :current-player first-player
      :strike-occurred? false
