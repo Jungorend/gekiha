@@ -109,9 +109,9 @@
 (defmethod proc :mulligan [game]
   (case (get-phase-status game)
     :start (-> (set-phase game :mulligan :processing :opponent-mulligan)
-               (set-input {:player (:current-player game)
+               (set-input {:player       (:current-player game)
                            :request-type :cards
-                           :destinations [(:current-player game) :areas :hand]}))
+                           :destinations [[(:current-player game) :areas :hand]]}))
     :opponent-mulligan (-> (set-phase game :mulligan :processing)
                            (set-input {:player (:next-player game)
                                        :request-type :cards

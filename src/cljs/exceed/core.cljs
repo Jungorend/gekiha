@@ -3,6 +3,7 @@
             [reagent.dom :as dom]
             [re-frame.core :as rf]
             [exceed.cards.core :as cards]
+            [exceed.input-validation :as validation]
             [ajax.core :refer [GET POST]]))
 
 ;; TODO: Right now we're just assuming we're player 1 and there's no
@@ -22,6 +23,11 @@
   :set-gamestate
   (fn [db [_ gamestate]]
     (assoc db :game gamestate)))
+
+(rf/reg-sub
+  :game
+  (fn [db _]
+    (get db :game)))
 
 (rf/reg-event-db
   :add-selected
@@ -107,6 +113,24 @@
                                                   hand))]
      [:div.discard [:h3 (str "Discard: " (count discard))]]]))
 
+(defn send-response!
+  "Submits to server player's decisions."
+  [response]
+  true)                                                     ;; TODO: Actual server submission
+
+(defn confirm-selection
+  "When called, this will validate the input required from the player, and then
+  send it to the server."
+  []
+  (let [game @(rf/subscribe [:game])
+        input-required (:input-required game)
+        player (:player game)]
+    (case (:request-type input-required)
+      :cards (let [selected @(rf/subscribe [:selected])]
+               (if (validation/valid-response? game player selected)
+                 (send-response! selected)
+                 (.log js/console (str "Not a valid response.")))))))
+
 (defn player-input-status
   "If the game is waiting on the player for something, this reports what needs to be done."
   []
@@ -117,7 +141,11 @@
         (case (:request-type input-required)
           :cards (str "You need to select cards from "
                       (:destinations input-required)
-                      "."))])]))
+                      "."))
+        [:br]
+        [:button
+         {:on-click confirm-selection}
+         "Confirm selection"]])]))
 
 (defn get-gamestate []
   (GET "/game-state"

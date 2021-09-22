@@ -1,6 +1,7 @@
 (ns exceed.game.core
   (:require [exceed.game.cards.lookup :refer [get-character-info get-card-info call-card-function]]
             [exceed.game.utilities :refer [get-input add-card pay-focus remove-card draw-card reshuffle get-response]]
+            [exceed.input-validation :as validation]
             [exceed.game.state-machine :refer [process complete-task]]))
 
 ;; Notes for order of attacking

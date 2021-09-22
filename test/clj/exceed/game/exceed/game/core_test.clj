@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [exceed.game.cards.normals :refer :all]
             [exceed.game.state-machine :refer [process complete-task set-phase]]
+            [exceed.input-validation :as validation]
             [exceed.game.core :refer :all]))
 
 (defn confirm-space
@@ -37,3 +38,9 @@
       (is (= {:player :p1 :request-type :force} (:input-required start))))
     (testing "Confirm that force value calculates correctly."
       (is (= {:player :p1 :request-type :move :target [:p1 :ryu] :range [-2 -2 2 2]} (:input-required force-request))))))
+
+(deftest card-input-validation
+  (let [game (assoc @game-list :input-required {:player :p1 :request-type :cards :destinations [[:p1 :areas :hand]]})
+        response (map #(hash-map :card % :location [:p1 :areas :hand]) (take 2 (get-in game [:p1 :areas :hand])))]
+    (testing "Confirm that it accepts valid input."
+      (is (validation/valid-response? game :p1 response)))))
