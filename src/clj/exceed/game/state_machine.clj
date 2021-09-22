@@ -8,16 +8,18 @@
   [character player]
   (let [c (:cards (get-character-info character))]
     (shuffle (concat
-               (map #(hash-map :player player
+               (map-indexed #(hash-map :player player
                                :facing :face-down
                                :type :normal
                                :deck character
-                               :name %) (take 16 (cycle (keys exceed.game.cards.normals/normals))))
-               (map #(hash-map :player player
+                               :id %1
+                               :name %2) (take 16 (cycle (keys exceed.game.cards.normals/normals))))
+               (map-indexed #(hash-map :player player
                                :facing :face-down
                                :deck character
-                               :type (if (= :force (get-in c [% :cost 0])) :special :ultra)
-                               :name %) (take 16 (cycle (keys c))))))))
+                               :id (+ %1 16)
+                               :type (if (= :force (get-in c [%2 :cost 0])) :special :ultra)
+                               :name %2) (take 14 (cycle (keys c))))))))
 
 (defn create-player
   "Create initial player stats"

@@ -55,7 +55,7 @@
 
 (rf/reg-sub
   :input-required
-  (fn [db [_ player]]
+  (fn [db _]
        (get-in db [:game :input-required])))
 
 (rf/reg-sub
@@ -74,15 +74,14 @@
   for the card. It will have the alt text of the description,
   and notifies `item-selected` if clicked."
   [card]
-  (let [attack-card? (or (= :face-down (second (:card card)))
-                         (= :face-up (second (:card card))))
+  (let [c (:card card)
         selected? @(rf/subscribe [:is-selected? card])]
     [:p {:class    (str "card"
-                        (if (= :p1 (first (:card card))) " player-one" " player-two")
+                        (if (= :p1 (:player c)) " player-one" " player-two")
                         selected?)
-         :title    (cards/key->description (if attack-card? (nth (:card card) 3) (nth (:card card) 1)) :description)
+         :title    (cards/card->description c :description)
          :on-click #(rf/dispatch [:add-selected card])}
-     (cards/key->description (if attack-card? (nth (:card card) 3) (nth (:card card) 1)) :name)]))
+     (cards/card->description c :name)]))
 
 (defn view-game-area
   []
@@ -111,8 +110,7 @@
 (defn player-input-status
   "If the game is waiting on the player for something, this reports what needs to be done."
   []
-  (let [player @(rf/subscribe [:player])
-        input-required @(rf/subscribe [:input-required player])]
+  (let [input-required @(rf/subscribe [:input-required])]
     [:div.input-required
      (when (seq input-required)
        [:h3

@@ -92,13 +92,13 @@
            Name a card. The opponent must discard a copy of that card, or reveal a hand without any."]})
 
 
-(defn key->description
+(defn card->description
   "Returns the name or description of the given card keyword.
   :name for name, :description for description."
-  [key type]
-  (get-in (case key
-            :ryu s3/ryu :ryu-hadoken s3/ryu :ryu-donkey-kick s3/ryu :ryu-one-inch-punch s3/ryu :ryu-shoryuken s3/ryu :ryu-tatsu s3/ryu :ryu-metsu-hadoken s3/ryu :ryu-metsu-shoryuken s3/ryu
-            :grasp normals :cross normals :assault normals :dive normals :spike normals :sweep normals :focus normals :block normals
-            ) [key (if (= type :name)
+  [card type]
+  (get-in (if (= :normal (:type card))
+            normals
+            (case (:deck card)
+              :ryu s3/ryu)) [(:name card) (if (= type :name)
                                0
                                1)]))
