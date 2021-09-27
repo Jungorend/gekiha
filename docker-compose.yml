@@ -1,0 +1,24 @@
+networks:
+  gekiha-network:
+    driver: bridge
+
+services:
+  postgresql:
+    image: 'bitnami/postgresql:latest'
+    volumes: 
+      - postgresql-data:/bitnami/postgresql
+    environment:
+      - POSTGRESQL_USER=user
+      - POSTGRESQL_PASSWORD=password
+      - POSTGRESQL_DATABASE=gekiha
+    networks:
+      - gekiha-network
+    gekiha:
+      image: 'gekiha'
+      environment:
+        - DATABASE_URL: "postgresql://username:changeme2021@postgresql:5432/gekiha"
+      networks:
+        - gekiha-network
+
+volumes:
+  postgresql-data:

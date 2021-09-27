@@ -43,4 +43,6 @@
   (let [game (assoc @game-list :input-required {:player :p1 :request-type :cards :destinations [[:p1 :areas :hand]]})
         response (map #(hash-map :card % :location [:p1 :areas :hand]) (take 2 (get-in game [:p1 :areas :hand])))]
     (testing "Confirm that it accepts valid input."
-      (is (validation/valid-response? game :p1 response)))))
+      (is (validation/valid-response? game :p1 response)))
+    (testing "Confirm that it rejects cards from the wrong area."
+      (is (not (validation/valid-response? game :p1 (map #(assoc % :location [:p2 :areas :hand]) response)))))))
